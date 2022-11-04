@@ -1,0 +1,5 @@
+Scene files format are:
+0 = air block
+1 = neutral tile
+2 = red tile
+3 = blue tile
