@@ -7,6 +7,13 @@ Environment::Environment(char *level_path){
     blue_block = LoadModel("assets/models/blue_block/blue.obj");
     neutral_block = LoadModel("assets/models/neutral_block/neutral.obj");
 
+    Shader shader = LoadShader(TextFormat("assets/shaders/lighting.vs"), TextFormat("assets/shaders/lighting.fs", 330));
+    shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+
+    red_block.materials[0].shader = shader;   
+    blue_block.materials[0].shader = shader;   
+    neutral_block.materials[0].shader = shader;   
+
 }
 
 void Environment::load_level(char *level_path){
@@ -54,13 +61,13 @@ void Environment::draw(){
         switch (*i)
         {
         case blue_tile:
-            DrawModel(blue_block, (Vector3){x, 0.0f, z }, 0.5f, WHITE);
+            DrawModel(blue_block, (Vector3){x, -1.0f, z }, 0.5f, BLUE);
             break;
         case red_tile:
-            DrawModel(red_block, (Vector3){x, 0.0f, z }, 0.5f, WHITE);
+            DrawModel(red_block, (Vector3){x, -1.0f, z }, 0.5f, RED);
             break;
         case neutral_tile:
-            DrawModel(neutral_block, (Vector3){x, 0.0f, z }, 0.5f, WHITE);
+            DrawModel(neutral_block, (Vector3){x, -1.0f, z }, 0.5f, WHITE);
             break;
         case air_tile:
             break;        
@@ -74,6 +81,7 @@ void Environment::draw(){
 }
 
 Environment::~Environment(){
+    UnloadShader(shader);
     UnloadModel(blue_block);
     UnloadModel(red_block);
     UnloadModel(neutral_block);

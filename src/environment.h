@@ -18,6 +18,7 @@ class Environment
         Model red_block;
         Model blue_block; 
         Model neutral_block;
+        Shader shader;
 
         void load_level(char *level_path);
 
