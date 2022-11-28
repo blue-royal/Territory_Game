@@ -5,8 +5,16 @@
 
 #include <string>
 #include <vector>
+#include <set>
+#include <iostream>
 
 #include "raylib.h"
+
+struct Grid_point
+{
+    int x;
+    int y;
+};
 
 class Environment
 {
@@ -18,13 +26,17 @@ class Environment
         Model red_block;
         Model blue_block; 
         Model neutral_block;
+        Model obstical_block;
         Shader shader;
 
-        void load_level(char *level_path);
+        
 
     public:
         Environment(char *level_path);
+        void load_level(char *level_path);
+        bool valid_target(Vector2 target);
         void update_tile();
+        void create_graph();
         void draw();
         ~Environment();
         

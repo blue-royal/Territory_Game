@@ -35,7 +35,7 @@ bool ray_sphere_intersection(Ray ray, Vector3 center, float radius){
 }
 
 Vector3 ray_ground_intersection(Ray ray){
-    float dist = 1-ray.position.y / ray.direction.y;
+    float dist = GROUND_HEIGHT-ray.position.y / ray.direction.y;
     return Vector3Add(ray.position, Vector3Scale(ray.direction, dist));
 }
 

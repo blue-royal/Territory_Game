@@ -16,7 +16,8 @@ class Worker
 
     public:
         Worker(Color colour);
-        void update(Ray mouse_ray);
+        void update();
+        void update_target(Vector3 new_target);
         void draw();
         ~Worker();
         
