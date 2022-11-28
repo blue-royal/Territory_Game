@@ -42,4 +42,3 @@ Vector3 ray_ground_intersection(Ray ray){
 Vector3 move_to_target(Vector3 position, Vector3 target, float speed){
     return Vector3Add(position, Vector3Scale( Vector3Normalize( Vector3Subtract(target, position) ), speed));
 }
-
