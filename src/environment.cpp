@@ -57,10 +57,11 @@ void Environment::load_level(char *level_path){
 }
 
 void Environment::create_graph(){
-    std::vector<Vector2> all_nodes;
+    
     unsigned int counter = 0;
     float x;
     float z;
+    // vector of all possible nodes is made from all nodes diagnonal to an obstical tile
     for (std::vector<Tiles>::iterator i = grid.begin(); i != grid.end(); i++) {
         if (*i == obstical_tile){
             x = counter%width;
@@ -73,19 +74,116 @@ void Environment::create_graph(){
         }
         counter ++;
     }
-    counter = 0;
-    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i != all_nodes.end(); i++) {
-        std::cout << all_nodes[counter].x << ", " <<all_nodes[counter].y << std::endl;
-        counter ++;
+
+  
+//     // remove duplicates in vector
+    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end() - 1; i++) {
+        Vector2 vec = *i;
+        for (std::vector<Vector2>::iterator j = i + 1; j < all_nodes.end(); j++) {
+            if (Vector2Equals(vec, *j)){
+                all_nodes.erase(j);
+            }
+        }
     }
+
+
+    // remove air and obstical tiles
+    // remove all nodes that are adjacent to obstical nodes
+    Tiles curr_tile;
+    Tiles up_tile;
+    Tiles down_tile;
+    Tiles left_tile;
+    Tiles right_tile;
+    bool to_remove;
+    std::cout << all_nodes.size() << std::endl;
+    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end(); i++) {
+        to_remove = false;
+        curr_tile = grid[(*i).x + ((*i).y * width)];
+        // if the node is an obstical or air tile remove it        
+        if (curr_tile == obstical_tile || curr_tile == air_tile){
+            to_remove = true;
+        }
+        // if the node is adjacent to an obstical or air tile remove it
+        left_tile = grid[(*i).x + 1 + ((*i).y * width)];
+        if (left_tile == obstical_tile){
+            to_remove = true;
+        }
+        right_tile = grid[(*i).x - 1 + ((*i).y * width)];
+        if (right_tile == obstical_tile){
+            to_remove = true;
+        }
+        up_tile = grid[(*i).x + (((*i).y + 1) * width)];
+        if (up_tile == obstical_tile){
+            to_remove = true;
+        }
+        down_tile = grid[(*i).x + (((*i).y - 1) * width)];
+        if (down_tile == obstical_tile){
+            to_remove = true;
+        }
+
+        if(to_remove){
+            // erase the node and then go back a memory address
+            all_nodes.erase(i--);
+        }
+    }
+
+    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end() - 1; i++) {
+        Vector2 vec = *i;
+        for (std::vector<Vector2>::iterator j = i + 1; j < all_nodes.end(); j++) {
+            std::cout << valid_route(*i, *j) << std::endl;
+        }
+    }
+
 }
+
+bool Environment::valid_route(Vector2 &start, Vector2 &end){
+    // bresmans line algorithm
+    int dx, dy, p, x, y;
+
+    if (start.x > end.x){
+        Vector2 temp = start;
+        start = end;
+        end = temp;
+    }
+
+    std::cout << "start: " << start.x << ", " << start.y << std::endl;
+    std::cout << "end: " << end.x << ", " << end.y << std::endl;
+
+
+    dx = end.x - end.y;
+    dy = end.y - start.y;
+    
+    x=start.x;
+    y=start.y;
+    
+    p = 2 * (dy - dx);
+    
+    while(x < end.x){
+        if(p>=0){
+            // std::cout << x << ", " << y << std::endl;
+            if (grid[x + (y*width)] == obstical_tile){
+                return false;
+            }
+            y=y+1;
+            p=p+2*dy-2*dx;
+        }else{
+            // std::cout << x << ", " << y << std::endl;
+            if (grid[x + (y*width)] == obstical_tile){
+                return false;
+            }
+            p=p+2*dy;
+        }
+        x++;
+    }
+    return true;
+}
+
 
 bool Environment::valid_target(Vector2 target){
     if (target.x < 0.0f || target.x > width + 1){
         return false;
     }
     
-
     if (target.y < 0.0f|| target.y > height + 1){
         return false;
     }
@@ -135,6 +233,9 @@ void Environment::draw(){
         }
         
         counter++;
+    }
+    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i != all_nodes.end(); i++) {
+        DrawModel(blue_block, (Vector3){(*i).x, 0.0f, (*i).y }, 0.5f, WHITE);
     }
 }
 

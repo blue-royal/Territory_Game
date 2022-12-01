@@ -39,6 +39,6 @@ Vector3 ray_ground_intersection(Ray ray){
     return Vector3Add(ray.position, Vector3Scale(ray.direction, dist));
 }
 
-Vector3 move_to_target(Vector3 position, Vector3 target, float speed){
+Vector3 move_to_target(Vector3 &position, Vector3 &target, float &speed){
     return Vector3Add(position, Vector3Scale( Vector3Normalize( Vector3Subtract(target, position) ), speed));
 }

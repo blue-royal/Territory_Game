@@ -5,16 +5,10 @@
 
 #include <string>
 #include <vector>
-#include <set>
 #include <iostream>
 
 #include "raylib.h"
 
-struct Grid_point
-{
-    int x;
-    int y;
-};
 
 class Environment
 {
@@ -28,6 +22,7 @@ class Environment
         Model neutral_block;
         Model obstical_block;
         Shader shader;
+        std::vector<Vector2> all_nodes;
 
         
 
@@ -35,6 +30,7 @@ class Environment
         Environment(char *level_path);
         void load_level(char *level_path);
         bool valid_target(Vector2 target);
+        bool valid_route(Vector2 &start, Vector2 &end);
         void update_tile();
         void create_graph();
         void draw();
