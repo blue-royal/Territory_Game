@@ -10,7 +10,7 @@ class Worker
         Model worker_model;
         Color team;
         Shader shader;
-        Vector3 position;
+        
         Vector3 target;
         float speed;
 
@@ -20,6 +20,8 @@ class Worker
         void update_target(Vector3 new_target);
         void draw();
         ~Worker();
+
+        Vector3 position;
         
 };
 

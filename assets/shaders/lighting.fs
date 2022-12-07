@@ -20,4 +20,3 @@ void main()
 
 vec3 lightdir = vec3(0.3333f, 0.58333f, 0.08333f);
 float light = dot(fragNormal, lightdir);
-

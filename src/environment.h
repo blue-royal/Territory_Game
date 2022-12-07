@@ -1,5 +1,7 @@
-#ifndef __SPRITES__
-#define __SPRITES__
+#ifndef __ENV__
+#define __ENV__
+
+#define EPSILON 0.0001
 
 #include "utils.h"
 
@@ -13,24 +15,30 @@
 class Environment
 {
     private:
+        // all tile types
         enum Tiles { neutral_tile, red_tile, blue_tile, obstical_tile, air_tile  };
+        // grid width and height
         unsigned int width;
         unsigned int height;
+        // linear grid of all tile types
         std::vector<Tiles> grid;
+        // all block type models
         Model red_block;
         Model blue_block; 
         Model neutral_block;
         Model obstical_block;
         Shader shader;
+        // navigation nodes
         std::vector<Vector2> all_nodes;
+        std::vector<float> nav_graph;
 
         
-
     public:
         Environment(char *level_path);
         void load_level(char *level_path);
         bool valid_target(Vector2 target);
-        bool valid_route(Vector2 &start, Vector2 &end);
+        bool valid_route(Vector2 start, Vector2 end);
+        Vector2 gen_route(Vector2 start, Vector2 end);
         void update_tile();
         void create_graph();
         void draw();

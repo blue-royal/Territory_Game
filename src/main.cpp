@@ -3,8 +3,8 @@
 
 int main() {
     InitWindow(800, 500, "Territory");
-    Game territory_game;
-    territory_game.run_game();
+    Game* territory_game = new Game();
+    territory_game->run_game();
     
     return 0;
 }

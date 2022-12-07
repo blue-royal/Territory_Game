@@ -1,7 +1,7 @@
 #include"worker.h"
 
 Worker::Worker(Color colour){
-
+    // load model shader and relevant positions for the worker
     team = colour;
 
     worker_model = LoadModel("assets/models/worker_model/work.glb");
@@ -15,7 +15,7 @@ Worker::Worker(Color colour){
 }
 
 void Worker::update(){
-
+    // move the player towards the target by their speed
     position = move_to_target(position, target, speed);
 }
 

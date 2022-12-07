@@ -2,9 +2,7 @@
 
 Environment::Environment(char *level_path){
     load_level(level_path);
-    std::cout << "level loaded" << std::endl;
     red_block = LoadModel("assets/models/red_block/red.obj");
-    std::cout << "red loaded" << std::endl;
     blue_block = LoadModel("assets/models/blue_block/blue.obj");
     neutral_block = LoadModel("assets/models/neutral_block/neutral.obj");
     obstical_block = LoadModel("assets/models/obstical_block/obstical.obj");
@@ -17,16 +15,15 @@ Environment::Environment(char *level_path){
     obstical_block.materials[0].shader = shader;  
 
     create_graph();
-
 }
 
 void Environment::load_level(char *level_path){
 
     std::vector<std::string> tiles = read_file(level_path);
-
     height = tiles.size();
     width = tiles[0].size();
 
+    // compare each character in text file to build up level vectorr
     for (std::vector<std::string>::iterator i = tiles.begin(); i != tiles.end(); i++) {
         std::string layer = *i;
         for (std::string::size_type j = 0; j < layer.size(); j++) {
@@ -57,7 +54,7 @@ void Environment::load_level(char *level_path){
 }
 
 void Environment::create_graph(){
-    
+
     unsigned int counter = 0;
     float x;
     float z;
@@ -67,8 +64,8 @@ void Environment::create_graph(){
             x = counter%width;
             z = (int)(counter/width);
 
-            all_nodes.push_back((Vector2){x+1, z+1});
             all_nodes.push_back((Vector2){x-1, z-1});
+            all_nodes.push_back((Vector2){x+1, z+1});
             all_nodes.push_back((Vector2){x-1, z+1});
             all_nodes.push_back((Vector2){x+1, z-1});
         }
@@ -76,7 +73,7 @@ void Environment::create_graph(){
     }
 
   
-//     // remove duplicates in vector
+    // remove duplicates in vector
     for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end() - 1; i++) {
         Vector2 vec = *i;
         for (std::vector<Vector2>::iterator j = i + 1; j < all_nodes.end(); j++) {
@@ -89,34 +86,30 @@ void Environment::create_graph(){
 
     // remove air and obstical tiles
     // remove all nodes that are adjacent to obstical nodes
-    Tiles curr_tile;
-    Tiles up_tile;
-    Tiles down_tile;
-    Tiles left_tile;
-    Tiles right_tile;
+    Tiles curr_tile, right_tile, left_tile, down_tile, up_tile;
+
     bool to_remove;
-    std::cout << all_nodes.size() << std::endl;
     for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end(); i++) {
         to_remove = false;
-        curr_tile = grid[(*i).x + ((*i).y * width)];
+        curr_tile = grid[i->x + (i->y * width)];
         // if the node is an obstical or air tile remove it        
         if (curr_tile == obstical_tile || curr_tile == air_tile){
             to_remove = true;
         }
         // if the node is adjacent to an obstical or air tile remove it
-        left_tile = grid[(*i).x + 1 + ((*i).y * width)];
+        left_tile = grid[i->x + 1 + (i->y * width)];
         if (left_tile == obstical_tile){
             to_remove = true;
         }
-        right_tile = grid[(*i).x - 1 + ((*i).y * width)];
+        right_tile = grid[i->x - 1 + (i->y * width)];
         if (right_tile == obstical_tile){
             to_remove = true;
         }
-        up_tile = grid[(*i).x + (((*i).y + 1) * width)];
+        up_tile = grid[i->x + ((i->y + 1) * width)];
         if (up_tile == obstical_tile){
             to_remove = true;
         }
-        down_tile = grid[(*i).x + (((*i).y - 1) * width)];
+        down_tile = grid[i->x + ((i->y - 1) * width)];
         if (down_tile == obstical_tile){
             to_remove = true;
         }
@@ -127,17 +120,39 @@ void Environment::create_graph(){
         }
     }
 
-    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end() - 1; i++) {
+    // populate the matrix for pathfinding
+    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end(); i++) {
         Vector2 vec = *i;
-        for (std::vector<Vector2>::iterator j = i + 1; j < all_nodes.end(); j++) {
-            std::cout << valid_route(*i, *j) << std::endl;
+        for (std::vector<Vector2>::iterator j = all_nodes.begin(); j < all_nodes.end(); j++) {
+            if (valid_route(vec, *j)){
+                nav_graph.push_back(Vector2Distance(vec, *j));
+            }else{
+                nav_graph.push_back(0.0f);
+            }
         }
+        // add space for start and end nodes in graph
+        nav_graph.push_back(0.0f);
+        nav_graph.push_back(0.0f);
     }
+    // two additional rows for start and end nodes
+    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end() + 2; i++) {
+        nav_graph.push_back(0.0f);
+        nav_graph.push_back(0.0f);
+    }
+
+    unsigned int mat_size = all_nodes.size() + 2;
+    for (int i = 0; i < mat_size; i++){
+        for (int j = 0; j < mat_size; j++){
+            std::cout << nav_graph[i*width + j] << ", ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 
 }
 
-bool Environment::valid_route(Vector2 &start, Vector2 &end){
-    // bresmans line algorithm
+bool Environment::valid_route(Vector2 start, Vector2 end){
+    // bresmans line algorithm to detect if two nodes can be connected by a straight line
     int dx, dy, p, x, y;
 
     if (start.x > end.x){
@@ -146,40 +161,73 @@ bool Environment::valid_route(Vector2 &start, Vector2 &end){
         end = temp;
     }
 
-    std::cout << "start: " << start.x << ", " << start.y << std::endl;
-    std::cout << "end: " << end.x << ", " << end.y << std::endl;
-
-
-    dx = end.x - end.y;
+    dx = end.x - start.x;
     dy = end.y - start.y;
     
-    x=start.x;
-    y=start.y;
+    x = start.x;
+    y = start.y;
     
     p = 2 * (dy - dx);
     
-    while(x < end.x){
-        if(p>=0){
-            // std::cout << x << ", " << y << std::endl;
-            if (grid[x + (y*width)] == obstical_tile){
-                return false;
-            }
-            y=y+1;
-            p=p+2*dy-2*dx;
+    // for all points along the line check if they contain an obstruction e.g. an obstical or air tile
+    while(x <= end.x){
+        if (!valid_target((Vector2){ static_cast<float>(x), static_cast<float>(y) })){
+            return false;
+        }
+        if(p >= 0){
+            y++;
+            p += 2 * (dy - dx);
         }else{
-            // std::cout << x << ", " << y << std::endl;
-            if (grid[x + (y*width)] == obstical_tile){
-                return false;
-            }
-            p=p+2*dy;
+            p += 2 * dy;
         }
         x++;
     }
     return true;
 }
 
+Vector2 Environment::gen_route(Vector2 start, Vector2 end){
+
+    // if can travel directly to end node - then the function is complete
+    if (valid_route(start, end)){
+        return end;
+    }else{
+        // add start and end nodes to nav_graph
+        unsigned int mat_size = all_nodes.size() + 2;
+        unsigned int counter = 0;
+        for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end(); i++) {
+            if (valid_route(*i, start)){
+                nav_graph[((mat_size - 2) * mat_size) + counter] = Vector2Distance(*i, start);
+                nav_graph[((counter + 1) * mat_size) - 2] = Vector2Distance(*i, start);
+            }else{
+                nav_graph[((mat_size - 2) * mat_size) + counter] = 0.0f;
+                nav_graph[((counter + 1) * mat_size) - 2] = 0.0f;
+            }
+            if (valid_route(*i, end)){
+                nav_graph[((mat_size - 1) * mat_size) + counter] = Vector2Distance(*i, end);
+                nav_graph[((counter + 1) * mat_size) - 1] = Vector2Distance(*i, end);
+            }else{
+                nav_graph[((mat_size - 1) * mat_size) + counter] = 0.0f;
+                nav_graph[((counter + 1) * mat_size) - 1] = 0.0f;
+            }
+            counter ++;
+        }
+
+        for (int i = 0; i < mat_size; i++){
+            for (int j = 0; j < mat_size; j++){
+                std::cout << nav_graph[i*width + j] << ", ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+
+        // apply A* algorithm
+        // return next target node
+        return end;
+    }
+}
 
 bool Environment::valid_target(Vector2 target){
+    // if the target is off the grid then it is not valid
     if (target.x < 0.0f || target.x > width + 1){
         return false;
     }
@@ -188,6 +236,7 @@ bool Environment::valid_target(Vector2 target){
         return false;
     }
 
+    // if the tile is an obstical or air tile then it is invalid
     switch (grid[static_cast<int>(target.x) + ((int)target.y * width)])
     {
     case obstical_tile:
@@ -231,11 +280,12 @@ void Environment::draw(){
             std::cout << "couldn't detect tile type" << *i << std::endl;
             break;
         }
-        
         counter++;
     }
+
+    // tempororily draw all nodes in the nav mesh for debugging
     for (std::vector<Vector2>::iterator i = all_nodes.begin(); i != all_nodes.end(); i++) {
-        DrawModel(blue_block, (Vector3){(*i).x, 0.0f, (*i).y }, 0.5f, WHITE);
+        DrawModel(blue_block, (Vector3){i->x, 0.0f, i->y }, 0.5f, WHITE);
     }
 }
 
@@ -244,4 +294,5 @@ Environment::~Environment(){
     UnloadModel(blue_block);
     UnloadModel(red_block);
     UnloadModel(neutral_block);
+    UnloadModel(obstical_block);
 }
