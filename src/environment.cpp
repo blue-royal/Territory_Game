@@ -64,20 +64,20 @@ void Environment::create_graph(){
             x = counter%width;
             z = (int)(counter/width);
 
-            all_nodes.push_back((Vector2){x-1, z-1});
-            all_nodes.push_back((Vector2){x+1, z+1});
-            all_nodes.push_back((Vector2){x-1, z+1});
-            all_nodes.push_back((Vector2){x+1, z-1});
+            all_nodes.push_back(Node((Vector2){x-1, z-1}));
+            all_nodes.push_back(Node((Vector2){x+1, z+1}));
+            all_nodes.push_back(Node((Vector2){x-1, z+1}));
+            all_nodes.push_back(Node((Vector2){x+1, z-1}));
         }
         counter ++;
     }
 
   
     // remove duplicates in vector
-    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end() - 1; i++) {
-        Vector2 vec = *i;
-        for (std::vector<Vector2>::iterator j = i + 1; j < all_nodes.end(); j++) {
-            if (Vector2Equals(vec, *j)){
+    for (std::vector<Node>::iterator i = all_nodes.begin(); i < all_nodes.end() - 1; i++) {
+        Vector2 vec = i->coords;
+        for (std::vector<Node>::iterator j = i + 1; j < all_nodes.end(); j++) {
+            if (Vector2Equals(vec, j->coords)){
                 all_nodes.erase(j);
             }
         }
@@ -89,27 +89,27 @@ void Environment::create_graph(){
     Tiles curr_tile, right_tile, left_tile, down_tile, up_tile;
 
     bool to_remove;
-    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end(); i++) {
+    for (std::vector<Node>::iterator i = all_nodes.begin(); i < all_nodes.end(); i++) {
         to_remove = false;
-        curr_tile = grid[i->x + (i->y * width)];
+        curr_tile = grid[i->coords.x + (i->coords.y * width)];
         // if the node is an obstical or air tile remove it        
         if (curr_tile == obstical_tile || curr_tile == air_tile){
             to_remove = true;
         }
         // if the node is adjacent to an obstical or air tile remove it
-        left_tile = grid[i->x + 1 + (i->y * width)];
+        left_tile = grid[i->coords.x + 1 + (i->coords.y * width)];
         if (left_tile == obstical_tile){
             to_remove = true;
         }
-        right_tile = grid[i->x - 1 + (i->y * width)];
+        right_tile = grid[i->coords.x - 1 + (i->coords.y * width)];
         if (right_tile == obstical_tile){
             to_remove = true;
         }
-        up_tile = grid[i->x + ((i->y + 1) * width)];
+        up_tile = grid[i->coords.x + ((i->coords.y + 1) * width)];
         if (up_tile == obstical_tile){
             to_remove = true;
         }
-        down_tile = grid[i->x + ((i->y - 1) * width)];
+        down_tile = grid[i->coords.x + ((i->coords.y - 1) * width)];
         if (down_tile == obstical_tile){
             to_remove = true;
         }
@@ -119,47 +119,41 @@ void Environment::create_graph(){
             all_nodes.erase(i--);
         }
     }
-
-    // populate the matrix for pathfinding
-    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end(); i++) {
-        Vector2 vec = *i;
-        for (std::vector<Vector2>::iterator j = all_nodes.begin(); j < all_nodes.end(); j++) {
-            if (valid_route(vec, *j)){
-                nav_graph.push_back(Vector2Distance(vec, *j));
+    all_nodes.push_back(Node());
+    all_nodes.push_back(Node());
+    counter = 0;
+    for (std::vector<Node>::iterator j = all_nodes.begin(); j < all_nodes.end(); j++) {
+        j->index = counter;
+        counter ++;
+        std::cout << j->coords.x << ", " << j->coords.y << std::endl;
+    }
+    graph_size = all_nodes.size();
+    for (unsigned int i = 0; i < graph_size-2; i++){
+        for (unsigned int j = 0; j < graph_size-2; j++){
+            if (valid_route(all_nodes[i].coords, all_nodes[j].coords) && valid_route(all_nodes[j].coords, all_nodes[i].coords)){
+                nav_graph.push_back(Vector2Distance(all_nodes[i].coords, all_nodes[j].coords));
             }else{
-                nav_graph.push_back(0.0f);
+                nav_graph.push_back(-1);
             }
         }
-        // add space for start and end nodes in graph
-        nav_graph.push_back(0.0f);
-        nav_graph.push_back(0.0f);
+        nav_graph.push_back(-1);
+        nav_graph.push_back(-1);
     }
-    // two additional rows for start and end nodes
-    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end() + 2; i++) {
-        nav_graph.push_back(0.0f);
-        nav_graph.push_back(0.0f);
+    for (unsigned int i = 0; i < graph_size; i++){
+        nav_graph.push_back(-1);
+        nav_graph.push_back(-1);
     }
 
-    unsigned int mat_size = all_nodes.size() + 2;
-    for (int i = 0; i < mat_size; i++){
-        for (int j = 0; j < mat_size; j++){
-            std::cout << nav_graph[i*width + j] << ", ";
+    for (unsigned int i = 0; i < graph_size; i++){
+        for (unsigned int j = 0; j < graph_size; j++){
+            std::cout << nav_graph[(i*graph_size) + j] << ", ";
         }
-        std::cout << std::endl;
     }
-    std::cout << std::endl;
-
 }
 
 bool Environment::valid_route(Vector2 start, Vector2 end){
-    // bresmans line algorithm to detect if two nodes can be connected by a straight line
-    int dx, dy, p, x, y;
-
-    if (start.x > end.x){
-        Vector2 temp = start;
-        start = end;
-        end = temp;
-    }
+    float dx, dy, x, y;
+    int len;
 
     dx = end.x - start.x;
     dy = end.y - start.y;
@@ -167,21 +161,23 @@ bool Environment::valid_route(Vector2 start, Vector2 end){
     x = start.x;
     y = start.y;
     
-    p = 2 * (dy - dx);
-    
-    // for all points along the line check if they contain an obstruction e.g. an obstical or air tile
-    while(x <= end.x){
-        if (!valid_target((Vector2){ static_cast<float>(x), static_cast<float>(y) })){
+    if (abs(dy) < abs(dx)){
+        len = abs(dx);
+        dy = dy / abs(dx);
+        dx = dx / abs(dx);
+    } else {
+        len = abs(dy);
+        dx = dx / abs(dy);
+        dy = dy / abs(dy);
+    }
+    for (int i = 0; i <= len; i ++){
+        if (!valid_target((Vector2){ x, y })){
             return false;
         }
-        if(p >= 0){
-            y++;
-            p += 2 * (dy - dx);
-        }else{
-            p += 2 * dy;
-        }
-        x++;
+        y += dy;
+        x += dx;
     }
+
     return true;
 }
 
@@ -190,40 +186,99 @@ Vector2 Environment::gen_route(Vector2 start, Vector2 end){
     // if can travel directly to end node - then the function is complete
     if (valid_route(start, end)){
         return end;
-    }else{
-        // add start and end nodes to nav_graph
-        unsigned int mat_size = all_nodes.size() + 2;
-        unsigned int counter = 0;
-        for (std::vector<Vector2>::iterator i = all_nodes.begin(); i < all_nodes.end(); i++) {
-            if (valid_route(*i, start)){
-                nav_graph[((mat_size - 2) * mat_size) + counter] = Vector2Distance(*i, start);
-                nav_graph[((counter + 1) * mat_size) - 2] = Vector2Distance(*i, start);
-            }else{
-                nav_graph[((mat_size - 2) * mat_size) + counter] = 0.0f;
-                nav_graph[((counter + 1) * mat_size) - 2] = 0.0f;
-            }
-            if (valid_route(*i, end)){
-                nav_graph[((mat_size - 1) * mat_size) + counter] = Vector2Distance(*i, end);
-                nav_graph[((counter + 1) * mat_size) - 1] = Vector2Distance(*i, end);
-            }else{
-                nav_graph[((mat_size - 1) * mat_size) + counter] = 0.0f;
-                nav_graph[((counter + 1) * mat_size) - 1] = 0.0f;
-            }
-            counter ++;
+    }
+    Node begin = Node(start);
+    Node finish = Node(end);
+    // otherwise add the start and end node to the graph
+    for (unsigned int i = 0; i < graph_size-2; i++){
+        if (valid_route(start, all_nodes[i].coords) && valid_route(all_nodes[i].coords, start)){
+            nav_graph[(graph_size-2)*graph_size + i] = Vector2Distance(start, all_nodes[i].coords);
+            nav_graph[i*graph_size + (graph_size-2)] = Vector2Distance(start, all_nodes[i].coords);
+        }else{
+            nav_graph[(graph_size-2)*graph_size + i] = -1;
+            nav_graph[i*graph_size + (graph_size-2)] = -1;
+        }
+    
+        if (valid_route(end, all_nodes[i].coords) && valid_route(all_nodes[i].coords, end)){
+            nav_graph[(graph_size-1)*graph_size + i] = Vector2Distance(end, all_nodes[i].coords);
+            nav_graph[i*graph_size + (graph_size-1)] = Vector2Distance(end, all_nodes[i].coords);
+        }else{
+            nav_graph[(graph_size-1)*graph_size + i] = -1;
+            nav_graph[i*graph_size + (graph_size-1)] = -1;
         }
 
-        for (int i = 0; i < mat_size; i++){
-            for (int j = 0; j < mat_size; j++){
-                std::cout << nav_graph[i*width + j] << ", ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl;
+        nav_graph[(graph_size-1) * graph_size + (graph_size - 1)] = -1;
+        nav_graph[(graph_size-1) * graph_size + (graph_size - 1)] = -1;
+        nav_graph[(graph_size-1) * graph_size + (graph_size - 1)] = -1;
+        nav_graph[(graph_size-1) * graph_size + (graph_size - 1)] = -1;
+    }
+
+    begin.index = graph_size - 2;
+    finish.index = graph_size - 1;
+    all_nodes[graph_size - 2] = begin;
+    all_nodes[graph_size - 1] = finish;
+
+
 
         // apply A* algorithm
-        // return next target node
-        return end;
-    }
+        std::vector<unsigned int> open_set;
+
+        for (unsigned int i = 0; i < graph_size; i++) {
+            all_nodes[i].f_score = INFINITY;
+            all_nodes[i].g_score = INFINITY;
+        }
+
+        open_set.push_back(graph_size - 2);
+        all_nodes[open_set[0]].g_score = 0;
+        all_nodes[open_set[0]].f_score = all_nodes[open_set[0]].heuristic(end);
+
+        while(!open_set.empty()){
+            // find element in the openset witrh lowest f score 
+            unsigned int min_f_score_index = 0;
+            for(unsigned int i = 1; i < open_set.size(); i++){
+                if (all_nodes[open_set[i]].f_score < all_nodes[open_set[min_f_score_index]].f_score){
+                    min_f_score_index = i;
+                }
+            }
+
+
+            Node current = all_nodes[open_set[min_f_score_index]];
+            if (Vector2Equals(current.coords, end)){
+                //reconstruct path and done
+                int temp = current.index;
+                while (all_nodes[all_nodes[temp].previous].previous != -1){
+
+                    temp = all_nodes[temp].previous;
+                    
+                }
+
+                return all_nodes[temp].coords;
+            }
+            open_set.erase(open_set.begin() + min_f_score_index);
+
+            for (unsigned int i = 0; i < graph_size; i++){
+                if (nav_graph[current.index * graph_size + i] != -1 && nav_graph[current.index * graph_size + i] != 0){
+                    float tentative_g = current.g_score + nav_graph[(current.index * graph_size) + i];
+                    if (tentative_g < all_nodes[i].g_score){
+                        all_nodes[i].previous = current.index;
+                        all_nodes[i].g_score = tentative_g;
+                        all_nodes[i].f_score = tentative_g + all_nodes[i].heuristic(end);
+
+                        bool found = false;
+                        for (unsigned int j = 0; j < open_set.size(); j++){
+                            if(all_nodes[i].index == all_nodes[open_set[j]].index){
+                                found = true;
+                            }
+                        }
+                        if (!found){
+                            open_set.push_back(i);
+                        }
+                    }
+                }
+            }
+        }
+    std::cout << "now way through" << std::endl;
+    return end;
 }
 
 bool Environment::valid_target(Vector2 target){
@@ -284,9 +339,10 @@ void Environment::draw(){
     }
 
     // tempororily draw all nodes in the nav mesh for debugging
-    for (std::vector<Vector2>::iterator i = all_nodes.begin(); i != all_nodes.end(); i++) {
-        DrawModel(blue_block, (Vector3){i->x, 0.0f, i->y }, 0.5f, WHITE);
+    for (std::vector<Node>::iterator i = all_nodes.begin(); i != all_nodes.end(); i++) {
+        DrawModel(blue_block, (Vector3){i->coords.x, 0.0f, i->coords.y }, 0.5f, WHITE);
     }
+
 }
 
 Environment::~Environment(){
@@ -295,4 +351,17 @@ Environment::~Environment(){
     UnloadModel(red_block);
     UnloadModel(neutral_block);
     UnloadModel(obstical_block);
+}
+
+Node::Node(){
+
+}
+
+Node::Node(Vector2 point){
+    coords = point;
+}
+
+float Node::heuristic(Vector2 end){
+    // euclidian distance from current node to end
+    return Vector2Distance(coords, end);
 }

@@ -11,6 +11,22 @@
 
 #include "raylib.h"
 
+class Node
+{
+    public:
+        Node();
+        Node(Vector2 point);
+
+        Vector2 coords;
+        float f_score = INFINITY;
+        float g_score = INFINITY;
+        unsigned int index;
+        int previous = -1;
+        float heuristic(Vector2 end);
+
+
+
+};
 
 class Environment
 {
@@ -29,11 +45,13 @@ class Environment
         Model obstical_block;
         Shader shader;
         // navigation nodes
-        std::vector<Vector2> all_nodes;
+        unsigned int graph_size;
+        std::vector<Node> all_nodes;
         std::vector<float> nav_graph;
 
         
     public:
+        Environment();
         Environment(char *level_path);
         void load_level(char *level_path);
         bool valid_target(Vector2 target);

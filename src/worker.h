@@ -15,6 +15,7 @@ class Worker
         float speed;
 
     public:
+        Worker();
         Worker(Color colour);
         void update();
         void update_target(Vector3 new_target);
