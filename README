@@ -3,3 +3,7 @@ Scene files format are:
 1 = neutral tile
 2 = red tile
 3 = blue tile
+
+TODO:
+have multiple sprites using a vector of them
+be able to select sprites with a box select

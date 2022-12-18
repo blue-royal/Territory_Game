@@ -38,3 +38,16 @@ Vector3 ray_ground_intersection(Ray ray){
 Vector3 move_to_target(Vector3 &position, Vector3 &target, float &speed){
     return Vector3Add(position, Vector3Scale( Vector3Normalize( Vector3Subtract(target, position) ), speed));
 }
+
+Vector2 vec3_to_vec2(Vector3 vec){
+    return (Vector2){ vec.x, vec.z };
+}
+
+Vector3 vec2_to_vec3_ground(Vector2 vec){
+    return (Vector3){ vec.x, GROUND_HEIGHT, vec.y };
+}
+
+bool reached_target(Vector3 pos, Vector3 target){
+    return abs(pos.x - target.x) < 0.5f && abs(pos.y - target.y) < 0.5f && abs(pos.z - target.z) < 0.5f ;
+}
+

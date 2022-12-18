@@ -14,3 +14,6 @@ std::vector<std::string> read_file(char *path);
 bool ray_sphere_intersection(Ray ray, Vector3 center, float radius);
 Vector3 ray_ground_intersection(Ray ray);
 Vector3 move_to_target(Vector3 &position, Vector3 &target, float & speed);
+Vector2 vec3_to_vec2(Vector3 vec);
+Vector3 vec2_to_vec3_ground(Vector2 vec);
+bool reached_target(Vector3 pos, Vector3 target);

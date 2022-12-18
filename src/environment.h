@@ -1,8 +1,6 @@
 #ifndef __ENV__
 #define __ENV__
 
-#define EPSILON 0.0001
-
 #include "utils.h"
 
 #include <string>

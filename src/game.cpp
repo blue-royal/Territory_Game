@@ -5,6 +5,9 @@ Game::Game(){
 }
 
 void Game::initialise_game(){
+    env = new Environment((char*)"assets/scene/main_level.txt");
+    work = new Worker(BLUE, env);
+
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     // Define the camera to look into 3D world
     camera.position = (Vector3){ 20.0f, 10.0f, 20.0f }; // Camera position
@@ -24,23 +27,20 @@ void Game::game_loop(){
         ray = GetMouseRay(GetMousePosition(), camera);
         if (IsMouseButtonPressed(1)){
             ground_intersect = ray_ground_intersection(ray);
-            if(env.valid_target((Vector2){ ground_intersect.x, ground_intersect.z })){
+            if(env->valid_target((Vector2){ ground_intersect.x, ground_intersect.z })){
                 ground_intersect.y += 0.5f;
-                Vector2 start = (Vector2) {work.position.x, work.position.z};
-                Vector2 end = (Vector2) {ground_intersect.x, ground_intersect.z};
-                Vector2 target = env.gen_route(start, end);
-                work.update_target((Vector3){ target.x, ground_intersect.y , target.y });
+                work->update_target(ground_intersect);
             }
         }
         // Update
-        work.update();
+        work->update();
         // Draw
         BeginDrawing();
             ClearBackground(RAYWHITE);
             
             BeginMode3D(camera);
-                env.draw();
-                work.draw();
+                env->draw();
+                work->draw();
 
             EndMode3D();
 
@@ -54,4 +54,9 @@ void Game::run_game(){
     game_loop();
 
     CloseWindow();
+}
+
+Game::~Game(){
+    delete env;
+    delete work;
 }

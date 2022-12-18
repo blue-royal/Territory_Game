@@ -10,14 +10,15 @@ class Game{
     private:
         Camera camera;
 
-        Environment env = Environment((char*)"assets/scene/main_level.txt");
-        Worker work = Worker(BLUE);
+        Environment* env;
+        Worker* work;
         
         void initialise_game();
         void game_loop();
     public:
         Game();
         void run_game();
+        ~Game();
 };
 
 #endif

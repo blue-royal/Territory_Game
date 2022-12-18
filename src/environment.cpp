@@ -1,5 +1,9 @@
 #include "environment.h"
 
+Environment::Environment(){
+
+}
+
 Environment::Environment(char *level_path){
     load_level(level_path);
     red_block = LoadModel("assets/models/red_block/red.obj");
@@ -337,12 +341,6 @@ void Environment::draw(){
         }
         counter++;
     }
-
-    // tempororily draw all nodes in the nav mesh for debugging
-    for (std::vector<Node>::iterator i = all_nodes.begin(); i != all_nodes.end(); i++) {
-        DrawModel(blue_block, (Vector3){i->coords.x, 0.0f, i->coords.y }, 0.5f, WHITE);
-    }
-
 }
 
 Environment::~Environment(){
