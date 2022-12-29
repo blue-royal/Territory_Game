@@ -1,5 +1,4 @@
-#ifndef __ENV__
-#define __ENV__
+#pragma once
 
 #include "utils.h"
 
@@ -45,6 +44,7 @@ class Environment
         // navigation nodes
         unsigned int graph_size;
         std::vector<Node> all_nodes;
+        std::vector<Vector2> all_obsticals;
         std::vector<float> nav_graph;
 
         
@@ -61,5 +61,3 @@ class Environment
         ~Environment();
         
 };
-
-#endif

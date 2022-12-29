@@ -72,6 +72,8 @@ void Environment::create_graph(){
             all_nodes.push_back(Node((Vector2){x+1, z+1}));
             all_nodes.push_back(Node((Vector2){x-1, z+1}));
             all_nodes.push_back(Node((Vector2){x+1, z-1}));
+
+            all_obsticals.push_back((Vector2){x + 0.5f, z + 0.5f});
         }
         counter ++;
     }
@@ -123,6 +125,7 @@ void Environment::create_graph(){
             all_nodes.erase(i--);
         }
     }
+
     all_nodes.push_back(Node());
     all_nodes.push_back(Node());
     counter = 0;
@@ -296,7 +299,7 @@ bool Environment::valid_target(Vector2 target){
     }
 
     // if the tile is an obstical or air tile then it is invalid
-    switch (grid[static_cast<int>(target.x) + ((int)target.y * width)])
+    switch (grid[static_cast<int>(target.x) + (static_cast<int>(target.y) * width)])
     {
     case obstical_tile:
         return false;
@@ -341,6 +344,7 @@ void Environment::draw(){
         }
         counter++;
     }
+    
 }
 
 Environment::~Environment(){

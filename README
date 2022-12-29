@@ -5,5 +5,7 @@ Scene files format are:
 3 = blue tile
 
 TODO:
-have multiple sprites using a vector of them
-be able to select sprites with a box select
+scene rendereing: DONE
+sprite rendereing:l DONE
+shading: DONE
+pathfinding: DONE

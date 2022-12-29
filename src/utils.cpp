@@ -35,7 +35,21 @@ Vector3 ray_ground_intersection(Ray ray){
     return Vector3Add(ray.position, Vector3Scale(ray.direction, dist));
 }
 
-Vector3 move_to_target(Vector3 &position, Vector3 &target, float &speed){
+bool point_circle_intersection(Vector2 point, Vector2 center, float radius){
+    if (Vector2Distance(point, center) <= radius){
+        return true;
+    }
+    return false;
+}
+
+bool circle_circle_intersection(Vector2 center1, Vector2 center2, float radius1, float radius2){
+    if (Vector2Distance(center1, center2) < radius1 + radius2){
+        return true;
+    }
+    return false;
+}
+
+Vector3 move_to_target(Vector3 position, Vector3 target, float speed){
     return Vector3Add(position, Vector3Scale( Vector3Normalize( Vector3Subtract(target, position) ), speed));
 }
 
@@ -48,6 +62,6 @@ Vector3 vec2_to_vec3_ground(Vector2 vec){
 }
 
 bool reached_target(Vector3 pos, Vector3 target){
-    return abs(pos.x - target.x) < 0.5f && abs(pos.y - target.y) < 0.5f && abs(pos.z - target.z) < 0.5f ;
+    return abs(pos.x - target.x) < 0.1f && abs(pos.z - target.z) < 0.1f ;
 }
 

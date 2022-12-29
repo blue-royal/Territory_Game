@@ -1,11 +1,12 @@
-#ifndef __WORKER__
-#define __WORKER__
+#pragma once
 
 #include "raylib.h"
 #include "utils.h"
 #include "environment.h"
+#include "sprites.h"
+#include <vector>
 
-class Worker
+class Worker: public Sprite
 {
     private:
         Model worker_model;
@@ -14,19 +15,17 @@ class Worker
         Environment* env;
         
         Vector3 target;
-        Vector3 goal;
         float speed;
+        
+
+        void next_node();
 
     public:
         Worker();
-        Worker(Color colour, Environment* environ);
-        void update();
+        Worker(Vector3 start, Color colour, Environment* environ);
+        void update(std::vector<Sprite*> sprites);
         void update_target(Vector3 new_target);
-        void next_node();
         void draw();
+        void new_node_in_region(Vector2 mining_area);
         ~Worker();
-
-        Vector3 position;
 };
-
-#endif

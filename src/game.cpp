@@ -6,7 +6,18 @@ Game::Game(){
 
 void Game::initialise_game(){
     env = new Environment((char*)"assets/scene/main_level.txt");
-    work = new Worker(BLUE, env);
+    sprites.push_back(new Worker((Vector3){ 12.0f, 0.0f, 10.0f }, BLUE, env));
+    sprites.push_back(new Worker((Vector3){ 13.0f, 0.0f, 10.0f }, BLUE, env));
+    sprites.push_back(new Worker((Vector3){ 14.0f, 0.0f, 10.0f }, BLUE, env));
+    sprites.push_back(new Worker((Vector3){ 15.0f, 0.0f, 10.0f }, BLUE, env));
+    sprites.push_back(new Worker((Vector3){ 16.0f, 0.0f, 10.0f }, BLUE, env));
+
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 10.0f }, RED, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 11.0f }, RED, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 12.0f }, RED, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 13.0f }, RED, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 14.0f }, RED, env));
+
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     // Define the camera to look into 3D world
@@ -19,6 +30,8 @@ void Game::initialise_game(){
 
 void Game::game_loop(){
     Vector3 ground_intersect;
+    Vector3 corner1;
+    Vector3 corner2;
     
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -29,18 +42,43 @@ void Game::game_loop(){
             ground_intersect = ray_ground_intersection(ray);
             if(env->valid_target((Vector2){ ground_intersect.x, ground_intersect.z })){
                 ground_intersect.y += 0.5f;
-                work->update_target(ground_intersect);
+                for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
+                    if ((*i)->selected){
+                        (*i)->update_target(ground_intersect);
+                    }
+                    
+                }
             }
         }
+
+        if (IsMouseButtonPressed(0)){
+            corner1 = ray_ground_intersection(GetMouseRay(GetMousePosition(), camera));
+            
+        }
+        if (IsMouseButtonReleased(0)){
+            corner2 = ray_ground_intersection(GetMouseRay(GetMousePosition(), camera));
+            for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
+                (*i)->is_selected(corner1, corner2);
+            }
+        }
+
         // Update
-        work->update();
+        for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
+            (*i)->update(sprites);
+        }
+
         // Draw
         BeginDrawing();
             ClearBackground(RAYWHITE);
             
             BeginMode3D(camera);
                 env->draw();
-                work->draw();
+
+                for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
+                    (*i)->draw();
+                }
+
+                DrawGrid(50, 1.0f);
 
             EndMode3D();
 
@@ -58,5 +96,8 @@ void Game::run_game(){
 
 Game::~Game(){
     delete env;
-    delete work;
+    
+    for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
+        delete *i;
+    }
 }

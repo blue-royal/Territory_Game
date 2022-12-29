@@ -2,7 +2,7 @@
 #include <iostream>
 
 int main() {
-    InitWindow(800, 500, "Territory");
+    InitWindow(1600, 1000, "Territory");
     
     Game* territory_game = new Game();
     territory_game->run_game();

@@ -1,17 +1,18 @@
-#ifndef __GAMECLS__
-#define __GAMECLS__
+#pragma once
+
 
 #include "raylib.h"
 #include "environment.h"
 #include "worker.h"
 #include <iostream>
+#include <vector>
 
 class Game{
     private:
         Camera camera;
 
         Environment* env;
-        Worker* work;
+        std::vector<Sprite*> sprites;
         
         void initialise_game();
         void game_loop();
@@ -20,5 +21,3 @@ class Game{
         void run_game();
         ~Game();
 };
-
-#endif

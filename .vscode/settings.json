@@ -67,5 +67,12 @@
         "__tree": "cpp",
         "set": "cpp",
         "unordered_set": "cpp"
-    }
+    },
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/Users/tobiasmurphy/Library/CloudStorage/OneDrive-ExeterCollege/Territory Game/Territory_Game",
+            "binaryPath": "/Users/tobiasmurphy/Library/CloudStorage/OneDrive-ExeterCollege/Territory Game/Territory_Game/game.app",
+            "binaryArgs": []
+        }
+    ]
 }
