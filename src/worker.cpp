@@ -4,7 +4,7 @@ Worker::Worker(){
 
 }
 
-Worker::Worker(Vector3 start, Color colour, Environment* environ){
+Worker::Worker(Vector3 start, Teams colour, Environment* environ){
     // load model shader and relevant positions for the worker
     team = colour;
     env = environ;
@@ -18,10 +18,25 @@ Worker::Worker(Vector3 start, Color colour, Environment* environ){
     reached_goal = true;
 
     speed = 0.04f;
+    working_time = 0.0f;
     
 }
 
 void Worker::update(std::vector<Sprite*> sprites){
+    // update current tile
+    if (current_state == working_state && env->is_neutral(vec3_to_vec2(position)) && working_time > 2.0f){
+        env->update_tile(vec3_to_vec2(position), team);
+        working_time = 0.0f;
+        new_node_in_region();
+    }
+
+    if (reached_goal && current_state == working_state){
+        working_time += GetFrameTime();
+    }
+    if ( current_state == working_state && !env->is_neutral(vec3_to_vec2(goal))){
+        new_node_in_region();
+    }
+
     //if the player is at the target get the next target
     if(!reached_goal){
         reached_goal = reached_target(position, goal);
@@ -55,7 +70,7 @@ void Worker::update(std::vector<Sprite*> sprites){
                     avoidance_force = (Vector3){ position.x - (*i)->position.x, 0.0f, position.z - (*i)->position.z };
                     avoidance_force = Vector3Scale(Vector3Normalize(avoidance_force), MAX_AVOIDANCE_FORCE);
                     position = move_to_target(position, Vector3Add(ahead, avoidance_force), speed);
-                    if ((*i)->reached_goal && Vector3DistanceSqr(goal, (*i)->goal) < 1.0f){
+                    if ((*i)->reached_goal && Vector3DistanceSqr(goal, (*i)->goal) < 1.0f && current_state == idle_state){
                         reached_goal = true;
                     }   
                 } else {
@@ -68,8 +83,6 @@ void Worker::update(std::vector<Sprite*> sprites){
                          }
                     }
                 }
-
-
             }
             if (!blockage){
                 position = move_to_target(position, target, speed);
@@ -80,6 +93,7 @@ void Worker::update(std::vector<Sprite*> sprites){
 
 void Worker::update_target(Vector3 new_target){
     goal = new_target;
+    current_state = idle_state;
     reached_goal = false;
     Vector2 next_target = env->gen_route(vec3_to_vec2(position), vec3_to_vec2(goal));
     target = vec2_to_vec3_ground(next_target);
@@ -91,12 +105,22 @@ void Worker::next_node(){
 }
 
 void Worker::draw(){
-    DrawModel(worker_model, position, 0.3f, team);
+    if (team == red_team){
+        DrawModel(worker_model, position, 0.3f, RED);
+    } else if (team == blue_team){
+        DrawModel(worker_model, position, 0.3f, BLUE);
+    }
 }
 
-void new_node_in_region(Vector2 mining_area){
-    Vector2 home = (Vector2){ 3.5f, 3.5f };
-    // for 
+void Worker::new_node_in_region(){
+    update_target(vec2_to_vec3_ground(env->closest_neutral(vec3_to_vec2(position), mine_area)));
+    current_state = working_state;
+
+}
+
+void Worker::new_mine_area(){
+    mine_area = vec3_to_vec2(position);
+    new_node_in_region();
 }
 
 Worker::~Worker(){

@@ -6,17 +6,17 @@ Game::Game(){
 
 void Game::initialise_game(){
     env = new Environment((char*)"assets/scene/main_level.txt");
-    sprites.push_back(new Worker((Vector3){ 12.0f, 0.0f, 10.0f }, BLUE, env));
-    sprites.push_back(new Worker((Vector3){ 13.0f, 0.0f, 10.0f }, BLUE, env));
-    sprites.push_back(new Worker((Vector3){ 14.0f, 0.0f, 10.0f }, BLUE, env));
-    sprites.push_back(new Worker((Vector3){ 15.0f, 0.0f, 10.0f }, BLUE, env));
-    sprites.push_back(new Worker((Vector3){ 16.0f, 0.0f, 10.0f }, BLUE, env));
+    sprites.push_back(new Worker((Vector3){ 12.0f, 0.0f, 10.0f }, blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 14.0f, 0.0f, 10.0f }, blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 13.0f, 0.0f, 10.0f }, blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 15.0f, 0.0f, 10.0f }, blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 16.0f, 0.0f, 10.0f }, blue_team, env));
 
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 10.0f }, RED, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 11.0f }, RED, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 12.0f }, RED, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 13.0f }, RED, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 14.0f }, RED, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 10.0f }, red_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 11.0f }, red_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 12.0f }, red_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 13.0f }, red_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 14.0f }, red_team, env));
 
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
@@ -59,6 +59,14 @@ void Game::game_loop(){
             corner2 = ray_ground_intersection(GetMouseRay(GetMousePosition(), camera));
             for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
                 (*i)->is_selected(corner1, corner2);
+            }
+        }
+
+        if (IsKeyPressed(KEY_W)){
+            for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
+                if ((*i)->selected){
+                    (*i)->new_mine_area();
+                }
             }
         }
 

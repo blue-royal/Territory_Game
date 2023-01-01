@@ -9,23 +9,32 @@
 class Worker: public Sprite
 {
     private:
+
+        enum State { idle_state, working_state  };
+
         Model worker_model;
-        Color team;
+        Teams team;
         Shader shader;
         Environment* env;
-        
+
+        State current_state;
+
+        float working_time;        
         Vector3 target;
         float speed;
-        
+        Vector2 mine_area;
 
+        
+        void new_node_in_region();
         void next_node();
 
     public:
         Worker();
-        Worker(Vector3 start, Color colour, Environment* environ);
+        Worker(Vector3 start, Teams colour, Environment* environ);
         void update(std::vector<Sprite*> sprites);
         void update_target(Vector3 new_target);
         void draw();
-        void new_node_in_region(Vector2 mining_area);
+        
+        void new_mine_area();
         ~Worker();
 };

@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -10,6 +11,8 @@
 #define GROUND_HEIGHT 0
 
 std::vector<std::string> read_file(char *path);
+
+enum Teams {red_team, blue_team};
 
 bool ray_sphere_intersection(Ray ray, Vector3 center, float radius);
 bool point_circle_intersection(Vector2 point, Vector2 center, float radius);

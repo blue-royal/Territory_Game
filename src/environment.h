@@ -55,7 +55,9 @@ class Environment
         bool valid_target(Vector2 target);
         bool valid_route(Vector2 start, Vector2 end);
         Vector2 gen_route(Vector2 start, Vector2 end);
-        void update_tile();
+        Vector2 closest_neutral(Vector2 pos, Vector2 target);
+        bool is_neutral(Vector2 pos);
+        void update_tile(Vector2 pos, Teams team);
         void create_graph();
         void draw();
         ~Environment();

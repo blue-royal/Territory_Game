@@ -57,6 +57,48 @@ void Environment::load_level(char *level_path){
     }
 }
 
+Vector2 Environment::closest_neutral(Vector2 pos, Vector2 target){
+    float x, z;
+    unsigned int counter = 0;
+
+    float minimum_score = INFINITY;
+    Vector2 current_return = (Vector2){  0.0f, 0.0f };
+
+    for (std::vector<Tiles>::iterator i = grid.begin(); i != grid.end(); i++) {
+        if (*i == neutral_tile){
+            x = counter%width;
+            z = (int)(counter/width);
+
+            Vector2 tile_pos = (Vector2){ x + 0.5f, z + 0.5f };
+
+            float score = Vector2Distance(target, tile_pos) + Vector2Distance(pos, tile_pos);
+            if ( score < minimum_score ){
+                minimum_score = score;
+                current_return = tile_pos;
+            }
+        }
+        counter++;
+    }
+    return current_return;
+}
+
+bool Environment::is_neutral(Vector2 pos){
+    if (pos.x < 0.0f || pos.x > width + 1){
+        return false;
+    }
+    
+    if (pos.y < 0.0f|| pos.y > height + 1){
+        return false;
+    }
+
+    // if the tile is an obstical or air tile then it is invalid
+    if(grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] == neutral_tile){
+        return true;
+    }
+    return false;
+}
+
+
 void Environment::create_graph(){
 
     unsigned int counter = 0;
@@ -313,8 +355,12 @@ bool Environment::valid_target(Vector2 target){
     }
 }
 
-void Environment::update_tile(){
-    
+void Environment::update_tile(Vector2 pos, Teams team){
+    if (team == red_team){
+        grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] = red_tile;
+    } else if (team == blue_team){
+        grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] = blue_tile;
+    }
 }
 
 void Environment::draw(){
