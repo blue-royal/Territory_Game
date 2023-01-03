@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 
+
 class Game{
     private:
         Camera camera;
