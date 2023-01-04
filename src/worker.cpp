@@ -1,10 +1,9 @@
 #include"worker.h"
 
-Worker::Worker(){
-
+Worker::Worker() : Sprite(Borris::worker_unit){
 }
 
-Worker::Worker(Vector3 start, Teams colour, Environment* environ){
+Worker::Worker(Vector3 start, Teams colour, Environment* environ) : Sprite(Borris::worker_unit){
     // load model shader and relevant positions for the worker
     team = colour;
     env = environ;

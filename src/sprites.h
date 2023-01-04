@@ -4,10 +4,13 @@
 #include "environment.h"
 #include <iostream>
 
+enum class Borris : int {worker_unit, army_unit};
+
 class Sprite
 {
     public:
-        Sprite();
+        Sprite() = default;
+        explicit Sprite(Borris NType) : Type(NType) {};
         virtual void update(std::vector<Sprite*> sprites);
         virtual void update_target(Vector3 new_target);
         virtual void draw();
@@ -21,4 +24,5 @@ class Sprite
 
         bool reached_goal;
         Vector3 goal;
+        Borris Type;
 };

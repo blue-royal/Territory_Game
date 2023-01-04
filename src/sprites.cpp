@@ -1,9 +1,5 @@
 #include "sprites.h"
 
-Sprite::Sprite(){
-
-}
-
 void Sprite::update(std::vector<Sprite*> sprites){
     std::cout << "override the update function" << std::endl;
 }

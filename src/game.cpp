@@ -5,6 +5,9 @@ Game::Game(){
 }
 
 void Game::initialise_game(){
+
+    Networking network = Networking();
+
     env = new Environment((char*)"assets/scene/main_level.txt");
     sprites.push_back(new Worker((Vector3){ 12.0f, 0.0f, 10.0f }, blue_team, env));
     sprites.push_back(new Worker((Vector3){ 14.0f, 0.0f, 10.0f }, blue_team, env));
@@ -42,9 +45,12 @@ void Game::game_loop(){
             ground_intersect = ray_ground_intersection(ray);
             if(env->valid_target((Vector2){ ground_intersect.x, ground_intersect.z })){
                 ground_intersect.y += 0.5f;
-                for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
-                    if ((*i)->selected){
-                        (*i)->update_target(ground_intersect);
+                for (Sprite* i : sprites) {
+                    if (i->Type == Borris::worker_unit){
+                        auto TypedI = (Worker*) i;
+                        if (TypedI->selected){
+                            TypedI->update_target(ground_intersect);
+                        }
                     }
                     
                 }
@@ -57,8 +63,8 @@ void Game::game_loop(){
         }
         if (IsMouseButtonReleased(0)){
             corner2 = ray_ground_intersection(GetMouseRay(GetMousePosition(), camera));
-            for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
-                (*i)->is_selected(corner1, corner2);
+            for (Sprite* i : sprites) {
+                i->is_selected(corner1, corner2);
             }
         }
 
