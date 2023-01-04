@@ -356,9 +356,9 @@ bool Environment::valid_target(Vector2 target){
 }
 
 void Environment::update_tile(Vector2 pos, Teams team){
-    if (team == red_team){
+    if (team == Teams::red_team){
         grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] = red_tile;
-    } else if (team == blue_team){
+    } else if (team == Teams::blue_team){
         grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] = blue_tile;
     }
 }

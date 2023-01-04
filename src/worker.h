@@ -10,7 +10,7 @@ class Worker: public Sprite
 {
     private:
 
-        enum State { idle_state, working_state  };
+        enum class State : int { idle_state, working_state  };
 
         Model worker_model;
         Teams team;

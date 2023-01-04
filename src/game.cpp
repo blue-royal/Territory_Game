@@ -9,17 +9,17 @@ void Game::initialise_game(){
     Networking network = Networking();
 
     env = new Environment((char*)"assets/scene/main_level.txt");
-    sprites.push_back(new Worker((Vector3){ 12.0f, 0.0f, 10.0f }, blue_team, env));
-    sprites.push_back(new Worker((Vector3){ 14.0f, 0.0f, 10.0f }, blue_team, env));
-    sprites.push_back(new Worker((Vector3){ 13.0f, 0.0f, 10.0f }, blue_team, env));
-    sprites.push_back(new Worker((Vector3){ 15.0f, 0.0f, 10.0f }, blue_team, env));
-    sprites.push_back(new Worker((Vector3){ 16.0f, 0.0f, 10.0f }, blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 12.0f, 0.0f, 10.0f }, Teams::blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 14.0f, 0.0f, 10.0f }, Teams::blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 13.0f, 0.0f, 10.0f }, Teams::blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 15.0f, 0.0f, 10.0f }, Teams::blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 16.0f, 0.0f, 10.0f }, Teams::blue_team, env));
 
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 10.0f }, red_team, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 11.0f }, red_team, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 12.0f }, red_team, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 13.0f }, red_team, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 14.0f }, red_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 10.0f }, Teams::red_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 11.0f }, Teams::red_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 12.0f }, Teams::red_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 13.0f }, Teams::red_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 14.0f }, Teams::red_team, env));
 
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
@@ -46,7 +46,7 @@ void Game::game_loop(){
             if(env->valid_target((Vector2){ ground_intersect.x, ground_intersect.z })){
                 ground_intersect.y += 0.5f;
                 for (Sprite* i : sprites) {
-                    if (i->Type == Borris::worker_unit){
+                    if (i->Type == Sprite_Type::worker_unit){
                         auto TypedI = (Worker*) i;
                         if (TypedI->selected){
                             TypedI->update_target(ground_intersect);
@@ -69,16 +69,19 @@ void Game::game_loop(){
         }
 
         if (IsKeyPressed(KEY_W)){
-            for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
-                if ((*i)->selected){
-                    (*i)->new_mine_area();
+            for (Sprite* i : sprites) {
+                if (i->Type == Sprite_Type::worker_unit){
+                    auto typedI = (Worker*) i;
+                    if (typedI->selected){
+                        typedI->new_mine_area();
+                    }
                 }
             }
         }
 
         // Update
-        for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
-            (*i)->update(sprites);
+       for (Sprite* i : sprites) {
+            i->update(sprites);
         }
 
         // Draw
@@ -88,11 +91,9 @@ void Game::game_loop(){
             BeginMode3D(camera);
                 env->draw();
 
-                for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
-                    (*i)->draw();
+                for (Sprite* i : sprites) {
+                    i->draw();
                 }
-
-                DrawGrid(50, 1.0f);
 
             EndMode3D();
 
