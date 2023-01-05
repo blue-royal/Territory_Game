@@ -6,7 +6,8 @@ Game::Game(){
 
 void Game::initialise_game(){
 
-    Networking network = Networking();
+    Server network = Server();
+    Client client = Client();
 
     env = new Environment((char*)"assets/scene/main_level.txt");
     sprites.push_back(new Worker((Vector3){ 12.0f, 0.0f, 10.0f }, Teams::blue_team, env));

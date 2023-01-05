@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __WORKER__
+#define __WORKER__
 
 #include "raylib.h"
 #include "utils.h"
@@ -38,3 +39,5 @@ class Worker: public Sprite
         void new_mine_area();
         ~Worker();
 };
+
+#endif

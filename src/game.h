@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef __GAME__
+#define __GAME__
 
 #include "raylib.h"
 #include "environment.h"
@@ -23,3 +23,5 @@ class Game{
         void run_game();
         ~Game();
 };
+
+#endif

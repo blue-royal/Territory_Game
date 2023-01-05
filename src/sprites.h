@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __UTILS__
+#define __UTILS__
 
 #include "raylib.h"
 #include "environment.h"
@@ -24,3 +25,5 @@ class Sprite
         Vector3 goal;
         Sprite_Type Type;
 };
+
+#endif
