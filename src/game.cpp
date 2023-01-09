@@ -6,18 +6,18 @@ Game::Game(){
 
 void Game::initialise_game(){
 
-    Server network = Server();
-    Client client = Client();
+    // Server network = Server(6234);
+    // Client client = Client(6234);
 
     env = new Environment((char*)"assets/scene/main_level.txt");
-    sprites.push_back(new Worker((Vector3){ 12.0f, 0.0f, 10.0f }, Teams::blue_team, env));
-    sprites.push_back(new Worker((Vector3){ 14.0f, 0.0f, 10.0f }, Teams::blue_team, env));
+    sprites.push_back(new Archer((Vector3){ 12.0f, 0.0f, 10.0f }, Teams::blue_team, env));
+    sprites.push_back(new Archer((Vector3){ 14.0f, 0.0f, 10.0f }, Teams::blue_team, env));
     sprites.push_back(new Worker((Vector3){ 13.0f, 0.0f, 10.0f }, Teams::blue_team, env));
     sprites.push_back(new Worker((Vector3){ 15.0f, 0.0f, 10.0f }, Teams::blue_team, env));
     sprites.push_back(new Worker((Vector3){ 16.0f, 0.0f, 10.0f }, Teams::blue_team, env));
 
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 10.0f }, Teams::red_team, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 11.0f }, Teams::red_team, env));
+    sprites.push_back(new Archer((Vector3){ 5.0f, 0.0f, 10.0f }, Teams::red_team, env));
+    sprites.push_back(new Archer((Vector3){ 5.0f, 0.0f, 11.0f }, Teams::red_team, env));
     sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 12.0f }, Teams::red_team, env));
     sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 13.0f }, Teams::red_team, env));
     sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 14.0f }, Teams::red_team, env));
@@ -53,7 +53,12 @@ void Game::game_loop(){
                             TypedI->update_target(ground_intersect);
                         }
                     }
-                    
+                    else if (i->Type == Sprite_Type::archer_unit){
+                        auto TypedI = (Archer*) i;
+                        if (TypedI->selected){
+                            TypedI->update_target(ground_intersect);
+                        }
+                    } 
                 }
             }
         }
@@ -113,7 +118,7 @@ void Game::run_game(){
 Game::~Game(){
     delete env;
     
-    for (std::vector<Sprite*>::iterator i = sprites.begin(); i < sprites.end(); i++) {
-        delete *i;
+    for (Sprite* i : sprites) {
+        delete i;
     }
 }

@@ -4,12 +4,9 @@ void Sprite::update(std::vector<Sprite*> sprites){
     std::cout << "override the update function" << std::endl;
 }
 
-void Sprite::update_target(Vector3 new_target){
-    std::cout << "override the update target function" << std::endl;
-}
-
 void Sprite::draw(){
-
+    // default drawing of model
+    DrawSphereWires(position, 0.5f, 5, 5, BLACK);
 }
 
 void Sprite::is_selected(Vector3 corner1, Vector3 corner2){

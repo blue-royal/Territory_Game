@@ -1,40 +1,26 @@
-#include"worker.h"
+#include"archer.h"
 
-Worker::Worker() : Sprite(Sprite_Type::worker_unit){
+Archer::Archer() : Sprite(Sprite_Type::worker_unit){
 }
 
-Worker::Worker(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprite_Type::worker_unit){
+Archer::Archer(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprite_Type::archer_unit){
     // load model shader and relevant positions for the worker
     team = colour;
     env = environ;
 
-    worker_model = LoadModel("assets/models/worker_model/work.glb");
+    archer_model = LoadModel("assets/models/archer_model/archer.obj");
     Shader shader = LoadShader(TextFormat("assets/shaders/lighting.vs"), TextFormat("assets/shaders/lighting.fs", 330));
-    worker_model.materials[0].shader = shader;   
+    archer_model.materials[0].shader = shader;   
     position = start;
     target = start;
     goal = start;
     reached_goal = true;
 
-    speed = 0.04f;
-    working_time = 0.0f;
+    speed = 0.06f;
     
 }
 
-void Worker::update(std::vector<Sprite*> sprites){
-    // update current tile
-    if (current_state == State::working_state && env->is_neutral(vec3_to_vec2(position)) && working_time > 2.0f){
-        env->update_tile(vec3_to_vec2(position), team);
-        working_time = 0.0f;
-        new_node_in_region();
-    }
-
-    if (reached_goal && current_state == State::working_state){
-        working_time += GetFrameTime();
-    }
-    if ( current_state == State::working_state && !env->is_neutral(vec3_to_vec2(goal))){
-        new_node_in_region();
-    }
+void Archer::update(std::vector<Sprite*> sprites){
 
     //if the player is at the target get the next target
     if(!reached_goal){
@@ -69,7 +55,7 @@ void Worker::update(std::vector<Sprite*> sprites){
                     avoidance_force = (Vector3){ position.x - i->position.x, 0.0f, position.z - i->position.z };
                     avoidance_force = Vector3Scale(Vector3Normalize(avoidance_force), MAX_AVOIDANCE_FORCE);
                     position = move_to_target(position, Vector3Add(ahead, avoidance_force), speed);
-                    if (i->reached_goal && Vector3DistanceSqr(goal, i->goal) < 1.0f && current_state == State::idle_state){
+                    if (i->reached_goal && Vector3DistanceSqr(goal, i->goal) < 1.0f){
                         reached_goal = true;
                     }   
                 } else {
@@ -90,43 +76,32 @@ void Worker::update(std::vector<Sprite*> sprites){
     }
 }
 
-void Worker::update_target(Vector3 new_target){
+void Archer::update_target(Vector3 new_target){
     goal = new_target;
-    current_state = State::idle_state;
     reached_goal = false;
     Vector2 next_target = env->gen_route(vec3_to_vec2(position), vec3_to_vec2(goal));
     target = vec2_to_vec3_ground(next_target);
 }
 
-void Worker::next_node(){
+void Archer::next_node(){
     Vector2 next_target = env->gen_route(vec3_to_vec2(target), vec3_to_vec2(goal));
     target = vec2_to_vec3_ground(next_target);
 }
 
-void Worker::draw(){
+void Archer::draw(){
     if (team == Teams::red_team){
-        DrawModel(worker_model, position, 0.3f, RED);
+        DrawModel(archer_model, position, 0.3f, RED);
     } else if (team == Teams::blue_team){
-        DrawModel(worker_model, position, 0.3f, BLUE);
+        DrawModel(archer_model, position, 0.3f, BLUE);
     }
 }
 
-void Worker::new_node_in_region(){
-    update_target(vec2_to_vec3_ground(env->closest_neutral(vec3_to_vec2(position), mine_area)));
-    current_state = State::working_state;
 
-}
-
-void Worker::new_mine_area(){
-    mine_area = vec3_to_vec2(position);
-    new_node_in_region();
-}
-
-void Worker::decrease_health(float damage){
+void Archer::decrease_health(float damage){
     health -= damage;
 }
 
-Worker::~Worker(){
+Archer::~Archer(){
     UnloadShader(shader);
-    UnloadModel(worker_model);
+    UnloadModel(archer_model);
 }

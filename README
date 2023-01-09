@@ -6,12 +6,20 @@ Scene files format are:
 
 TODO:
 scene rendereing: DONE
-sprite rendereing:l DONE
+sprite rendereing: DONE
 shading: DONE
-pathfinding: DONEish
-mining: DONEish
-money:
-army units: 
-netwoking: 
-add deltatime
-improve the modelling
+pathfinding: DONE
+mining: DONE
+
+army units: finish attack move
+money/resources:
+menu: 
+networking: half done
+endgame state: 
+
+OPTIONAL:
+add deltatime for movement... : 
+improve the models/animations
+more units
+map navigation
+minimap

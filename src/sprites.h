@@ -5,7 +5,7 @@
 #include "environment.h"
 #include <iostream>
 
-enum class Sprite_Type : int {worker_unit, army_unit};
+enum class Sprite_Type : int {worker_unit, archer_unit};
 
 class Sprite
 {
@@ -13,7 +13,6 @@ class Sprite
         Sprite() = default;
         explicit Sprite(Sprite_Type NType) : Type(NType) {};
         virtual void update(std::vector<Sprite*> sprites);
-        virtual void update_target(Vector3 new_target);
         virtual void draw();
         void is_selected(Vector3 corner1, Vector3 corner2);
         ~Sprite();

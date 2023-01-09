@@ -29,15 +29,26 @@ class Worker: public Sprite
         void new_node_in_region();
         void next_node();
 
+        float health = 100.0f;
+
     public:
         Worker();
         Worker(Vector3 start, Teams colour, Environment* environ);
         void update(std::vector<Sprite*> sprites);
         void update_target(Vector3 new_target);
         void draw();
+
+        void decrease_health(float damage);
         
         void new_mine_area();
         ~Worker();
+
+
+};
+
+class c_Worker : public Sprite
+{
+
 };
 
 #endif

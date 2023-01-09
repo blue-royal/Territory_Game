@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include "environment.h"
 #include "worker.h"
+#include "archer.h"
 #include "network.h"
 #include <iostream>
 #include <vector>

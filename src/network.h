@@ -14,18 +14,24 @@
 
 class Server
 {
-    private:
-    int server_socket;
-
     public:
-        Server();
-        // ~Server();
+        Server(int port);
 };
 
 class Client
 {
     public:
-        Client();
+        Client(int port);
 };
+
+enum class Message_Header : int { draw_message, input_message };
+
+struct Message{
+    Message_Header header;
+    
+    
+
+};
+
 
 #endif
