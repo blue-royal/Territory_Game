@@ -34,8 +34,10 @@ void Game::initialise_game(){
 
 void Game::game_loop(){
     Vector3 ground_intersect;
-    Vector3 corner1;
-    Vector3 corner2;
+    Vector2 corner1;
+    Vector2 corner2;
+    Vector2 corner3;
+    Vector2 corner4;
     
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -64,13 +66,19 @@ void Game::game_loop(){
         }
 
         if (IsMouseButtonPressed(0)){
-            corner1 = ray_ground_intersection(GetMouseRay(GetMousePosition(), camera));
+            corner1 = GetMousePosition();
             
         }
         if (IsMouseButtonReleased(0)){
-            corner2 = ray_ground_intersection(GetMouseRay(GetMousePosition(), camera));
+            corner2 = GetMousePosition();
+            corner3 = (Vector2){ corner1.x, corner2.y };
+            corner4 = (Vector2){ corner1.y, corner2.x };
+
             for (Sprite* i : sprites) {
-                i->is_selected(corner1, corner2);
+                i->is_selected(ray_ground_intersection(GetMouseRay(corner1, camera)),
+                    ray_ground_intersection(GetMouseRay(corner2, camera)), 
+                    ray_ground_intersection(GetMouseRay(corner3, camera)), 
+                    ray_ground_intersection(GetMouseRay(corner4, camera)));
             }
         }
 

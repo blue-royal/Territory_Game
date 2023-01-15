@@ -2,26 +2,34 @@
 #include "menu.h"
 #include <iostream>
 
-#define SERVER true
-#define CLIENT false
+#define SERVER 0
+#define CLIENT 1
 
 int main() {
 
-    InitWindow(1600, 1000, "Territory");
+    InitWindow(800, 500, "Territory");
 
-    bool res = run_menu();
+    int res = run_menu();
     if (res == SERVER)
     {
-        Game* territory_game = new Game();
-        territory_game->run_game();
+        // Game* territory_game = new Game();
+        // territory_game->run_game();
 
-        delete territory_game;
+        // delete territory_game;
+
+        Server server = Server(1843);
+        server.recieve();
+    
     } 
     else if (res == CLIENT){
-        Game* territory_game = new Game();
-        territory_game->run_game();
+        // Game* territory_game = new Game();
+        // territory_game->run_game();
 
-        delete territory_game;
+        // delete territory_game;
+        Client client = Client(1843);
+        Serialise to_test;
+        to_test = to_test << (int) 258;
+        client.send(to_test.get_bytes());
     }
 
     return 0;

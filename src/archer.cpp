@@ -9,7 +9,12 @@ Archer::Archer(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprit
     env = environ;
 
     archer_model = LoadModel("assets/models/archer_model/archer.obj");
-    Shader shader = LoadShader(TextFormat("assets/shaders/lighting.vs"), TextFormat("assets/shaders/lighting.fs", 330));
+    shader = LoadShader(TextFormat("assets/shaders/lighting.vs"), TextFormat("assets/shaders/lighting.fs", 330));
+
+    halo_model = LoadModel("assets/models/selected_halo/halo.obj");
+    halo_model.materials[0].shader = shader;   
+
+
     archer_model.materials[0].shader = shader;   
     position = start;
     target = start;
@@ -94,6 +99,10 @@ void Archer::draw(){
     } else if (team == Teams::blue_team){
         DrawModel(archer_model, position, 0.3f, BLUE);
     }
+
+    if (selected){
+        DrawModel(halo_model, position, 0.3f, WHITE);
+    }
 }
 
 
@@ -104,4 +113,5 @@ void Archer::decrease_health(float damage){
 Archer::~Archer(){
     UnloadShader(shader);
     UnloadModel(archer_model);
+    UnloadModel(halo_model);
 }

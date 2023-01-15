@@ -32,9 +32,10 @@ void Button::draw(){
     DrawText(text, pos.x + 10, pos.y + 10, fontsize, BLACK);
 }
 
-bool run_menu(){
-    Button server_button = Button((Vector2){250.0f, 250.0f}, 500, 100, GREEN, "Server", 50);
-    Button client_button = Button((Vector2){800.0f, 250.0f}, 500, 100, GREEN, "Client", 50);
+int run_menu(){
+    Button server_button = Button((Vector2){250.0f*GetScreenWidth()/1600, 250.0f*GetScreenHeight()/1000}, 500*GetScreenWidth()/1600, 100*GetScreenHeight()/1000, GREEN, "Server", 50*GetScreenWidth()/1600);
+    Button client_button = Button((Vector2){800.0f*GetScreenWidth()/1600, 250.0f*GetScreenHeight()/1000}, 500*GetScreenWidth()/1600, 100*GetScreenHeight()/1000, GREEN, "Client", 50*GetScreenWidth()/1600);
+    Button quit_button = Button((Vector2){390.0f*GetScreenWidth()/1600, 400.0f*GetScreenHeight()/1000}, 200*GetScreenWidth()/1600, 100*GetScreenHeight()/1000, GREEN, "QUIT", 50*GetScreenWidth()/1600);
 
     bool running = true;
 
@@ -45,21 +46,34 @@ bool run_menu(){
         // run the event loop
         if (IsMouseButtonReleased(0)){
             if(server_button.on_button(GetMousePosition())){
+                EndDrawing();
                 return SERVER;
             }
             else if(client_button.on_button(GetMousePosition())){
+                EndDrawing();
                 return CLIENT;
+            }
+            else if(quit_button.on_button(GetMousePosition())){
+                EndDrawing();
+                return QUIT;
             }
         }
 
         server_button.update();
         client_button.update();
+        quit_button.update();
+
 
         // run the draw loop
         BeginDrawing();
             ClearBackground(RAYWHITE);
+
+            DrawText("Territorio", (GetRenderWidth()/2) - 290*GetScreenWidth()/1600, 100*GetScreenHeight()/1000, 100*GetScreenWidth()/1600, BLACK);
+
             server_button.draw();
             client_button.draw();
+            quit_button.draw();
         EndDrawing();
     }
+    return QUIT;
 }

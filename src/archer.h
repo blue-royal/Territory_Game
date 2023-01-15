@@ -13,6 +13,7 @@ class Archer: public Sprite
 {
     private:
         Model archer_model;
+         Model halo_model;
         Teams team;
         Shader shader;
         Environment* env;

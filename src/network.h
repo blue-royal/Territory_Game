@@ -10,28 +10,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <vector>
+
+#include "serialise.h"
 
 
 class Server
 {
+    private:
+        unsigned short portno;
+        int server_socket, new_socket, err;
     public:
-        Server(int port);
+        Server(unsigned short port);
+        void send(std::vector<Byte> to_send);
+        void recieve();
+        ~Server();
 };
 
 class Client
 {
+    private:
+        unsigned short portno;
+        int server_socket, err;
+
     public:
-        Client(int port);
+        Client(unsigned short port);
+        void send(std::vector<Byte> to_send);
+        void recieve();
+        ~Client();
 };
-
-enum class Message_Header : int { draw_message, input_message };
-
-struct Message{
-    Message_Header header;
-    
-    
-
-};
-
 
 #endif

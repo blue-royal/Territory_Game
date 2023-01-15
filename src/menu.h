@@ -4,8 +4,9 @@
 #include "raylib.h"
 #include "raymath.h"
 
-#define SERVER true
-#define CLIENT false
+#define SERVER 0
+#define CLIENT 1
+#define QUIT 2
 
 class Button
 {
@@ -24,6 +25,6 @@ class Button
         void draw();
 };
 
-bool run_menu();
+int run_menu();
 
 #endif

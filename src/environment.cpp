@@ -105,8 +105,8 @@ void Environment::create_graph(){
     float x;
     float z;
     // vector of all possible nodes is made from all nodes diagnonal to an obstical tile
-    for (std::vector<Tiles>::iterator i = grid.begin(); i != grid.end(); i++) {
-        if (*i == obstical_tile){
+    for (Tiles i : grid){
+        if (i == obstical_tile){
             x = counter%width;
             z = (int)(counter/width);
 
@@ -144,7 +144,7 @@ void Environment::create_graph(){
         if (curr_tile == obstical_tile || curr_tile == air_tile){
             to_remove = true;
         }
-        // if the node is adjacent to an obstical or air tile remove it
+        // if the node is adjacent to an obstical or remove it
         left_tile = grid[i->coords.x + 1 + (i->coords.y * width)];
         if (left_tile == obstical_tile){
             to_remove = true;

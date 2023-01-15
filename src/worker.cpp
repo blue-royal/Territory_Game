@@ -9,8 +9,12 @@ Worker::Worker(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprit
     env = environ;
 
     worker_model = LoadModel("assets/models/worker_model/work.glb");
-    Shader shader = LoadShader(TextFormat("assets/shaders/lighting.vs"), TextFormat("assets/shaders/lighting.fs", 330));
-    worker_model.materials[0].shader = shader;   
+    shader = LoadShader(TextFormat("assets/shaders/lighting.vs"), TextFormat("assets/shaders/lighting.fs", 330));
+    worker_model.materials[0].shader = shader;  
+
+    halo_model = LoadModel("assets/models/selected_halo/halo.obj");
+    halo_model.materials[0].shader = shader;   
+
     position = start;
     target = start;
     goal = start;
@@ -109,6 +113,10 @@ void Worker::draw(){
     } else if (team == Teams::blue_team){
         DrawModel(worker_model, position, 0.3f, BLUE);
     }
+
+    if (selected){
+        DrawModel(halo_model, position, 0.3f, YELLOW);
+    }
 }
 
 void Worker::new_node_in_region(){
@@ -129,4 +137,5 @@ void Worker::decrease_health(float damage){
 Worker::~Worker(){
     UnloadShader(shader);
     UnloadModel(worker_model);
+    UnloadModel(halo_model);
 }

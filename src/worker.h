@@ -6,6 +6,7 @@
 #include "environment.h"
 #include "sprites.h"
 #include <vector>
+#include <iostream>
 
 class Worker: public Sprite
 {
@@ -17,6 +18,8 @@ class Worker: public Sprite
         Teams team;
         Shader shader;
         Environment* env;
+
+        Model halo_model;
 
         State current_state;
 
