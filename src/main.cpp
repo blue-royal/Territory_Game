@@ -28,7 +28,7 @@ int main() {
         // delete territory_game;
         Client client = Client(1843);
         Serialise to_test;
-        to_test = to_test << (int) 258;
+        to_test = to_test << (int) 258 << true << false << 12.75f;
         client.send(to_test.get_bytes());
     }
 

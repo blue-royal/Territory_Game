@@ -26,6 +26,7 @@ Serialise Serialise::operator << (int integer){
 }
 
 Serialise Serialise::operator << (bool booleans){
+    length ++;
     bytes.push_back(Byte(booleans));
 
     return *this;
@@ -57,23 +58,28 @@ Data_Types Deserialise::get_next_type(){
 }
 
 void Deserialise::find_next_type(){
-    switch (bytes[current].get_byte())
-    {
-    case 0b00000000:
-        next_type = Data_Types::bools;
-        break;
-    case 0b00000001:
-        next_type = Data_Types::bools;
-        break;
-    case 0b00000010:
-        next_type = Data_Types::integer;
-        break;
-    case 0b00000011:
-        next_type = Data_Types::reals;
-        break;
-    default:
+    if (current >= bytes.size()){
         next_type = Data_Types::finished;
-        break;
+    }
+    else{
+        switch (bytes[current].get_byte())
+        {
+        case 0b00000000:
+            next_type = Data_Types::bools;
+            break;
+        case 0b00000001:
+            next_type = Data_Types::bools;
+            break;
+        case 0b00000010:
+            next_type = Data_Types::integer;
+            break;
+        case 0b00000011:
+            next_type = Data_Types::reals;
+            break;
+        default:
+            next_type = Data_Types::finished;
+            break;
+        }
     }
 }
 
@@ -82,6 +88,9 @@ int Deserialise::get_int(){
     current ++;
     memcpy(&result, &bytes[current], 4);
     current += 4;
+
+    find_next_type();
+    
     return result;
 }
 
@@ -91,9 +100,13 @@ float Deserialise::get_real(){
     memcpy(&result, &bytes[current], 4);
     current += 4;
 
+    find_next_type();
+
     return result;
 }
 
 bool Deserialise::get_bool(){
-    return static_cast<bool>(bytes[current].get_byte());
+    current++;
+    find_next_type();
+    return static_cast<bool>(bytes[current-1].get_byte());
 }

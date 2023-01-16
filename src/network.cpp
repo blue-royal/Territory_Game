@@ -63,6 +63,27 @@ void Server::recieve(){
             std::cout << ", ";
         }
         std::cout << std::endl;
+
+        Deserialise unpack = Deserialise(buffer);
+        bool is_finished = false;
+
+        while (!is_finished){
+            switch (unpack.get_next_type())
+            {
+                case Data_Types::integer:
+                    std::cout << unpack.get_int() << ", ";
+                    break;
+                case Data_Types::reals:
+                    std::cout << unpack.get_real() << ", ";
+                    break;
+                case Data_Types::bools:
+                    std::cout << unpack.get_bool() << ", ";
+                    break;
+                default:
+                    is_finished = true;
+                    break;
+            }
+        }
     }
 }
 
@@ -126,7 +147,11 @@ void Client::recieve(){
 }
 
 void Client::send(std::vector<Byte> to_send){
-
+    for (Byte i: to_send){
+            i.print();
+            std::cout << ", ";
+        }
+        std::cout << std::endl;
 
     err = write(server_socket, &to_send[0], to_send.size());
     if (err < 0) {
