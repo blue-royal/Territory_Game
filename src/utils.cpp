@@ -62,6 +62,6 @@ Vector3 vec2_to_vec3_ground(Vector2 vec){
 }
 
 bool reached_target(Vector3 pos, Vector3 target){
-    return abs(pos.x - target.x) < 0.1f && abs(pos.z - target.z) < 0.1f ;
+    return abs(pos.x - target.x) < 0.05f && abs(pos.z - target.z) < 0.05f ;
 }
 

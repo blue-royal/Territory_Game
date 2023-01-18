@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ENV__
+#define __ENV__
 
 #include "utils.h"
 
@@ -63,3 +64,5 @@ class Environment
         ~Environment();
         
 };
+
+#endif
