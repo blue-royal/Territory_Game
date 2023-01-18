@@ -45,7 +45,9 @@ Serialise Serialise::operator << (float reals){
 
 
 std::vector<Byte> Serialise::get_bytes(){
-    return bytes;
+    std::vector<Byte> new_bytes = bytes;
+    new_bytes.push_back(0b00000100);
+    return new_bytes;
 }
 
 Deserialise::Deserialise(std::vector<Byte> bytes){
@@ -64,7 +66,7 @@ void Deserialise::find_next_type(){
     else{
         switch (bytes[current].get_byte())
         {
-        case 0b00000000:
+        case (0b00000000):
             next_type = Data_Types::bools;
             break;
         case 0b00000001:
@@ -75,6 +77,9 @@ void Deserialise::find_next_type(){
             break;
         case 0b00000011:
             next_type = Data_Types::reals;
+            break;
+        case 0b00000100:
+            next_type = Data_Types::finished;
             break;
         default:
             next_type = Data_Types::finished;
@@ -97,7 +102,9 @@ int Deserialise::get_int(){
 float Deserialise::get_real(){
     float result;
     current ++;
+    // std::cout << "pre memcpy" << std::endl;
     memcpy(&result, &bytes[current], 4);
+    // std::cout << "post memcpy" << std::endl;
     current += 4;
 
     find_next_type();

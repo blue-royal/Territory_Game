@@ -3,92 +3,78 @@
 Server::Server(unsigned short port){
     portno = port;
 
-    // set up non-blocking so if read result in an empty buffer it does not wait for a packet
-    // int flags = guard(fcntl(listen_socket_fd, F_GETFL), "could not get flags on TCP listening socket");
-    // guard(fcntl(listen_socket_fd, F_SETFL, flags | O_NONBLOCK), "could not set TCP listening socket to be non-blocking");
-
-    socklen_t client_len;
-    struct sockaddr_in server_address, client_address;
-    
-
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
     if (server_socket < 0) {
-        std::cout << "ERROR opening socket" << std::endl;
+        std::cout << "ERROR SERVER opening socket" << std::endl;
     }
-        
+
+
     bzero((char *) &server_address, sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
     server_address.sin_port = htons(portno);
 
-    // remove naples algorithm
     if (bind(server_socket, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
-        std::cout << "ERROR on binding" << std::endl;
+        std::cout << "ERROR  SERVER on binding" << std::endl;
     }
-              
 
+    Server::accepting();
+
+}
+
+void Server::accepting(){
     listen(server_socket,5);
 
     client_len = sizeof(client_address);
     new_socket = accept(server_socket, (struct sockaddr *) &client_address, &client_len);
     if (new_socket < 0){
-        std::cout << "ERROR on accept" << std::endl;
+        std::cout << "ERROR SERVER on accept" << std::endl;
+    } else{
+        accepted = true;
+        std::cout << " SERVER accepted" << std::endl;
     }
 }
 
-void Server::send(std::vector<Byte> to_send){
-
-    for ( int i = 0; i < 10; i++){
-        err = write(new_socket, &to_send[0], to_send.size());
-        if (err < 0){
-            std::cout << "ERROR writing to socket" << std::endl;
-        } 
+void Server::write(std::vector<Byte> to_send){
+    unsigned int counter = 0;
+    for (Byte i: to_send){
+        i.print();
+        std::cout << ", ";
+        counter++;
     }
+    std::cout << std::endl;
+    if (counter == 0){
+        std::cout << "DEBUG SERVER nothing sent" << std::endl;
+    }
+
+    std::cout << "server sending" << std::endl;
+    err = send(new_socket, &to_send[0], to_send.size(), MSG_DONTWAIT);
+    if (err < 0){
+        std::cout << "ERROR SERVER writing to socket" << std::endl;
+    } 
+    std::cout << "server sent" << std::endl;
 }
 
-void Server::recieve(){
+std::vector<Byte> Server::recieve(){
+    std::cout << "server recieving" << std::endl;
     std::vector<Byte> buffer(256, 0);
 
-    err = read(new_socket, &buffer[0], buffer.size());
+    err = recv(new_socket, &buffer[0], buffer.size(), MSG_DONTWAIT);
 
     if (err < 0){
-        std::cout << "ERROR reading from socket" << std::endl;
+        std::cout << "ERROR SERVER reading from socket" << std::endl;
     } 
     else{
         buffer.resize(err);
-        std::cout << "Here is the message:" << std::endl;
-        for (Byte i: buffer){
-            i.print();
-            std::cout << ", ";
-        }
-        std::cout << std::endl;
-
-        Deserialise unpack = Deserialise(buffer);
-        bool is_finished = false;
-
-        while (!is_finished){
-            switch (unpack.get_next_type())
-            {
-                case Data_Types::integer:
-                    std::cout << unpack.get_int() << ", ";
-                    break;
-                case Data_Types::reals:
-                    std::cout << unpack.get_real() << ", ";
-                    break;
-                case Data_Types::bools:
-                    std::cout << unpack.get_bool() << ", ";
-                    break;
-                default:
-                    is_finished = true;
-                    break;
-            }
-        }
     }
+    std::cout << "server recieved" << std::endl;
+
+    return buffer;
 }
 
 Server::~Server(){
-    shutdown(new_socket, SHUT_RDWR);
+    // shutdown(new_socket, SHUT_RDWR);
     shutdown(server_socket, SHUT_RDWR); 
 }
 
@@ -104,6 +90,8 @@ Client::Client(unsigned short port){
     if (server_socket < 0){
         std::cout << "ERROR opening socket" << std::endl;
     }
+
+
 
     server = gethostbyname("localhost");
 
@@ -121,45 +109,67 @@ Client::Client(unsigned short port){
     server_address.sin_port = htons(portno);
 
     if (connect(server_socket,(struct sockaddr *) &server_address,sizeof(server_address)) < 0) {
-        std::cout << "ERROR connecting" << std::endl;
+        std::cout << "ERROR CLIENT connecting" << std::endl;
     }
     else {
-        std::cout << " CONECTED TO CLIENT" << std::endl;
+        std::cout << " CONECTED TO SERVER" << std::endl;
     }
 
 }
 
-void Client::recieve(){
-    std::vector<float> buffer(256, 0);
+std::vector<Byte> Client::recieve(){
+    // std::cout << "client recieving" << std::endl;
+    std::vector<Byte> buffer(256, 0);
 
-    err = read(server_socket, &buffer[0], buffer.size());
-    if (err < 0) {
-        std::cout << "ERROR reading from socket" << std::endl;
+    err = recv(server_socket, &buffer[0], buffer.size(), MSG_DONTWAIT);
+    if (errno == EWOULDBLOCK){
+        std::cout << "ERROR CLIENT did not recieve any packets" << std::endl;
+    }
+    if (err < 0){
+        std::cout << "ERROR CLIENT reading from socket" << std::endl;
     }
     else{
         buffer.resize(err);
-        std::cout << "Here is the returned result" << std::endl;
-        for (float i : buffer){
-            std::cout << i << ", ";
-        }
-        std::cout << std::endl;
     }
+
+    unsigned int counter = 0;
+    std::cout << "client recieved" << std::endl;
+    for(Byte i: buffer){
+        i.print();
+        std::cout << ", ";
+        counter ++;
+    }
+    std::cout << std::endl;
+
+    if (counter == 0){
+        std::cout << "DEBUG CLIENT nothing recieved" << std::endl;
+    }
+
+    return buffer;
 }
 
-void Client::send(std::vector<Byte> to_send){
+void Client::write(std::vector<Byte> to_send){
+    std::cout << "client sending" << std::endl;
+    unsigned int counter = 0;
     for (Byte i: to_send){
-            i.print();
-            std::cout << ", ";
-        }
-        std::cout << std::endl;
-
-    err = write(server_socket, &to_send[0], to_send.size());
-    if (err < 0) {
-        std::cout << "ERROR writing to socket" << std::endl;
+        i.print();
+        std::cout << ", ";
+        counter++;
     }
+    std::cout << std::endl;
+    if (counter == 0){
+        std::cout << "DEBUG CLIENT nothing sent" << std::endl;
+    }
+
+    err = send(server_socket, &to_send[0], to_send.size(), MSG_DONTWAIT);
+    if (err < 0) {
+        std::cout << "ERROR CLIENT writing to socket" << std::endl;
+    }
+    std::cout << "client sent" << std::endl;
+
 }
 
 Client::~Client(){
-    shutdown(server_socket, SHUT_RDWR);
+    //shutdown(server_socket, SHUT_RDWR);
 }
 
