@@ -10,11 +10,14 @@ sprite rendereing: DONE
 shading: DONE
 pathfinding: DONE
 mining: DONE
+menu: DONE
 
 army units: finish attack move
 money/resources:
-menu: 
-networking: half done
+networking: DONEish
+    - changing environment
+    - change to sprites list
+    - sprites health
 endgame state: 
 
 OPTIONAL:
@@ -25,4 +28,4 @@ map navigation
 minimap
 
 
-save funtion - write up
+save funtion - write up - not needed and reasons.

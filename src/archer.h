@@ -13,8 +13,8 @@ class Archer: public Sprite
 {
     private:
         Model archer_model;
-         Model halo_model;
-        Teams team;
+        Model halo_model;
+        
         Shader shader;
         Environment* env;
 
@@ -38,10 +38,6 @@ class Archer: public Sprite
         
         void new_mine_area();
         ~Archer();
-};
-
-class c_archer : public Sprite 
-{
 
 };
 

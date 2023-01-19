@@ -13,7 +13,7 @@ class Sprite
 
     public:
         Sprite() = default;
-        explicit Sprite(Sprite_Type NType) : Type(NType) {};
+        explicit Sprite(Sprite_Type NType, Teams team) : Type(NType), team(team) {};
         virtual void update(std::vector<Sprite*> sprites);
         virtual void draw();
         void is_selected(Vector3 corner1, Vector3 corner2, Vector3 corner3, Vector3 corner4);
@@ -25,6 +25,7 @@ class Sprite
         bool reached_goal;
         Vector3 goal;
         Sprite_Type Type;
+        Teams team;
 };
 
 #endif

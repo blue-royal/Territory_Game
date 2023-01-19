@@ -31,59 +31,6 @@ void Game::initialise_game(){
 }
 
 void Game::event_update_draw(){
-    
-    // Events
-
-    Ray ray = { 0 };
-    ray = GetMouseRay(GetMousePosition(), camera);
-    if (IsMouseButtonPressed(1)){
-        ground_intersect = ray_ground_intersection(ray);
-        if(env->valid_target((Vector2){ ground_intersect.x, ground_intersect.z })){
-            ground_intersect.y += 0.5f;
-            for (Sprite* i : sprites) {
-                if (i->Type == Sprite_Type::worker_unit){
-                    auto TypedI = (Worker*) i;
-                    if (TypedI->selected){
-                        TypedI->update_target(ground_intersect);
-                    }
-                }
-                else if (i->Type == Sprite_Type::archer_unit){
-                    auto TypedI = (Archer*) i;
-                    if (TypedI->selected){
-                        TypedI->update_target(ground_intersect);
-                    }
-                } 
-            }
-        }
-    }
-
-    if (IsMouseButtonPressed(0)){
-        corner1 = GetMousePosition();
-        
-    }
-    if (IsMouseButtonReleased(0)){
-        corner2 = GetMousePosition();
-        corner3 = (Vector2){ corner1.x, corner2.y };
-        corner4 = (Vector2){ corner1.y, corner2.x };
-
-        for (Sprite* i : sprites) {
-            i->is_selected(ray_ground_intersection(GetMouseRay(corner1, camera)),
-                ray_ground_intersection(GetMouseRay(corner2, camera)), 
-                ray_ground_intersection(GetMouseRay(corner3, camera)), 
-                ray_ground_intersection(GetMouseRay(corner4, camera)));
-        }
-    }
-
-    if (IsKeyPressed(KEY_W)){
-        for (Sprite* i : sprites) {
-            if (i->Type == Sprite_Type::worker_unit){
-                auto typedI = (Worker*) i;
-                if (typedI->selected){
-                    typedI->new_mine_area();
-                }
-            }
-        }
-    }
 
     // Update
     for (Sprite* i : sprites) {
@@ -104,6 +51,74 @@ void Game::event_update_draw(){
         EndMode3D();
 
     EndDrawing();
+}
+
+void Game::events(Teams team){
+    // Events
+    Vector3 ground_intersect;
+    Vector2 corner1;
+    Vector2 corner2;
+    Vector2 corner3;
+    Vector2 corner4;
+
+    Ray ray = { 0 };
+
+    
+    ray = GetMouseRay(GetMousePosition(), camera);
+    if (IsMouseButtonPressed(1)){
+        ground_intersect = ray_ground_intersection(ray);
+        if(env->valid_target((Vector2){ ground_intersect.x, ground_intersect.z })){
+            ground_intersect.y += 0.5f;
+            for (Sprite* i : sprites) {
+                // if (i->team == team){
+                    if (i->Type == Sprite_Type::worker_unit){
+                        auto TypedI = (Worker*) i;
+                        if (TypedI->selected){
+                            TypedI->update_target(ground_intersect);
+                        }
+                    }
+                    else if (i->Type == Sprite_Type::archer_unit){
+                        auto TypedI = (Archer*) i;
+                        if (TypedI->selected){
+                            TypedI->update_target(ground_intersect);
+                        }
+                    } 
+                // }
+            }
+        }
+    }
+
+    if (IsMouseButtonPressed(0)){
+        corner1 = GetMousePosition();
+        
+    }
+    if (IsMouseButtonReleased(0)){
+        corner2 = GetMousePosition();
+        corner3 = (Vector2){ corner1.x, corner2.y };
+        corner4 = (Vector2){ corner1.y, corner2.x };
+
+        for (Sprite* i : sprites) {
+            // if(i->team == team)
+                i->is_selected(ray_ground_intersection(GetMouseRay(corner1, camera)),
+                    ray_ground_intersection(GetMouseRay(corner2, camera)), 
+                    ray_ground_intersection(GetMouseRay(corner3, camera)), 
+                    ray_ground_intersection(GetMouseRay(corner4, camera)));
+            // }
+        }
+    }
+
+    if (IsKeyPressed(KEY_W)){
+        for (Sprite* i : sprites) {
+            // if(i->team == team){
+                if (i->Type == Sprite_Type::worker_unit){
+                    auto typedI = (Worker*) i;
+                    if (typedI->selected){
+                        typedI->new_mine_area();
+                    }
+                }
+            // }
+        }
+    }
 }
 
 Game::~Game(){
@@ -132,6 +147,7 @@ void C_Game::run_game(){
     init_network();
     while (!WindowShouldClose()){ // Detect window close button or ESC key
         network();
+        events(Teams::red_team);
         event_update_draw();
     }
 
@@ -157,12 +173,14 @@ void C_Game::network(){
     }
 }
 
+
 void S_Game::run_game(){
     std::cout << "running" << std::endl;
     initialise_game();
     init_network();
     while (!WindowShouldClose()){ // Detect window close button or ESC key
         network();
+        events(Teams::blue_team);
         event_update_draw();
     }
 

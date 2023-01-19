@@ -1,9 +1,9 @@
 #include"worker.h"
 
-Worker::Worker() : Sprite(Sprite_Type::worker_unit){
+Worker::Worker() : Sprite(Sprite_Type::worker_unit, Teams::neutral_team){
 }
 
-Worker::Worker(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprite_Type::worker_unit){
+Worker::Worker(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprite_Type::worker_unit, colour){
     // load model shader and relevant positions for the worker
     team = colour;
     env = environ;

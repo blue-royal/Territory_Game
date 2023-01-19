@@ -11,23 +11,16 @@
 
 
 class Game{
-    private:
-        Camera camera;
-
-        Environment* env;
-        
-        bool server_or_client;
-
-        Vector3 ground_intersect;
-        Vector2 corner1;
-        Vector2 corner2;
-        Vector2 corner3;
-        Vector2 corner4;
-
     protected:
-        std::vector<Sprite*> sprites;
         void initialise_game();
         void event_update_draw();
+        void events(Teams team);
+
+        Environment* env;
+        std::vector<Sprite*> sprites;
+        
+
+        Camera camera;
 
     public:
         Game();

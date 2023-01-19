@@ -1,9 +1,9 @@
 #include"archer.h"
 
-Archer::Archer() : Sprite(Sprite_Type::worker_unit){
+Archer::Archer() : Sprite(Sprite_Type::worker_unit, Teams::neutral_team){
 }
 
-Archer::Archer(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprite_Type::archer_unit){
+Archer::Archer(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprite_Type::archer_unit, colour){
     // load model shader and relevant positions for the worker
     team = colour;
     env = environ;

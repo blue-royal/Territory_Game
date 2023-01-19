@@ -15,7 +15,7 @@ class Worker: public Sprite
         enum class State : int { idle_state, working_state  };
 
         Model worker_model;
-        Teams team;
+        
         Shader shader;
         Environment* env;
 
@@ -47,10 +47,6 @@ class Worker: public Sprite
         ~Worker();
 
 
-};
-
-class c_Worker : public Sprite
-{
 
 };
 
