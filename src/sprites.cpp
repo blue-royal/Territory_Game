@@ -17,16 +17,34 @@ void Sprite::draw(){
     DrawSphereWires(position, 0.5f, 5, 5, BLACK);
 }
 
-void Sprite::is_selected(Vector3 corner1, Vector3 corner2, Vector3 corner3, Vector3 corner4){
-    // if(Vector3Subtract(corner1, corner3))
+void Sprite::is_selected(Vector2 corner1, Vector2 corner2, Camera camera){
 
-    if(((position.x > corner1.x && position.x < corner2.x) || (position.x < corner1.x && position.x > corner2.x)) && 
-    ((position.z > corner1.z && position.z < corner2.z) || (position.z < corner1.z && position.z > corner2.z))){
-        std::cout << "selected" << std::endl;
+    Vector2 screen_pos = GetWorldToScreen(position, camera);
+
+
+    if(((screen_pos.x > corner1.x && screen_pos.x < corner2.x) || (screen_pos.x < corner1.x && screen_pos.x > corner2.x)) && 
+    ((screen_pos.y > corner1.y && screen_pos.y < corner2.y) || (screen_pos.y < corner1.y && screen_pos.y > corner2.y))){
         selected = true;
     } else {
         selected = false;
     }
+}
+
+void Sprite::draw_health_bar(Camera cam){
+    Vector2 screen_pos = GetWorldToScreen(position, cam);
+    DrawRectangle(screen_pos.x-20.0f, screen_pos.y - 30.0f, 40, 8, BLACK);
+    DrawRectangleGradientH(screen_pos.x-17.0f, screen_pos.y - 28.0f, 34, 4, RED, GREEN);
+    DrawRectangle(screen_pos.x-17.0f + (34*(health/full_health)), screen_pos.y - 28.0f, 34 - (34 * (health/full_health)) + 1, 4, BLACK);
+
+}
+
+void Sprite::decrease_health(float damage){
+    health -= damage;
+}
+
+void Sprite::set_health(float health){
+    full_health = health;
+    this->health = health;
 }
 
 Sprite::~Sprite(){

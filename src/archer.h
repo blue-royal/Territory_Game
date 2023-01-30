@@ -21,8 +21,12 @@ class Archer: public Sprite
       
         Vector3 target;
         float speed;
+        bool attack_mode = false;
 
-        float health = 200.0f;
+        float range = pow(5.0f, 2);
+        float damage = 5.0f;
+        float cool_down = 0.0f;
+        float cool_down_time = 2.0f;
 
         void next_node();
 
@@ -34,7 +38,7 @@ class Archer: public Sprite
         void attack_move();
         void draw();
 
-        void decrease_health(float damage);
+        void toggle_attack();
         
         void new_mine_area();
         ~Archer();

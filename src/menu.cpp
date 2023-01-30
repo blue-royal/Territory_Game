@@ -35,6 +35,7 @@ void Button::draw(){
 int run_menu(){
     Button server_button = Button((Vector2){250.0f*GetScreenWidth()/1600, 250.0f*GetScreenHeight()/1000}, 500*GetScreenWidth()/1600, 100*GetScreenHeight()/1000, GREEN, "Server", 50*GetScreenWidth()/1600);
     Button client_button = Button((Vector2){800.0f*GetScreenWidth()/1600, 250.0f*GetScreenHeight()/1000}, 500*GetScreenWidth()/1600, 100*GetScreenHeight()/1000, GREEN, "Client", 50*GetScreenWidth()/1600);
+    Button local_button = Button((Vector2){700.0f*GetScreenWidth()/1600, 400.0f*GetScreenHeight()/1000}, 400*GetScreenWidth()/1600, 100*GetScreenHeight()/1000, ORANGE, "Local", 50*GetScreenWidth()/1600);
     Button quit_button = Button((Vector2){390.0f*GetScreenWidth()/1600, 400.0f*GetScreenHeight()/1000}, 200*GetScreenWidth()/1600, 100*GetScreenHeight()/1000, GREEN, "QUIT", 50*GetScreenWidth()/1600);
 
     bool running = true;
@@ -53,6 +54,10 @@ int run_menu(){
                 EndDrawing();
                 return CLIENT;
             }
+            else if(local_button.on_button(GetMousePosition())){
+                EndDrawing();
+                return LOCAL;
+            }
             else if(quit_button.on_button(GetMousePosition())){
                 EndDrawing();
                 return QUIT;
@@ -61,6 +66,7 @@ int run_menu(){
 
         server_button.update();
         client_button.update();
+        local_button.update();
         quit_button.update();
 
 
@@ -72,6 +78,7 @@ int run_menu(){
 
             server_button.draw();
             client_button.draw();
+            local_button.draw();
             quit_button.draw();
         EndDrawing();
     }

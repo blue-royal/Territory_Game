@@ -30,7 +30,7 @@ void Game::initialise_game(){
     camera.projection = CAMERA_ORTHOGRAPHIC; 
 }
 
-void Game::event_update_draw(){
+void Game::update_draw(){
 
     // Update
     for (Sprite* i : sprites) {
@@ -49,17 +49,18 @@ void Game::event_update_draw(){
             }
 
         EndMode3D();
-
+        for (Sprite* i : sprites) {
+            i->draw_health_bar(camera);
+        }
+        // draw the number of resources
+        DrawText(std::to_string((int)points).c_str(), 10, 10, 30, BLACK);
     EndDrawing();
 }
 
 void Game::events(Teams team){
     // Events
     Vector3 ground_intersect;
-    Vector2 corner1;
     Vector2 corner2;
-    Vector2 corner3;
-    Vector2 corner4;
 
     Ray ray = { 0 };
 
@@ -70,7 +71,7 @@ void Game::events(Teams team){
         if(env->valid_target((Vector2){ ground_intersect.x, ground_intersect.z })){
             ground_intersect.y += 0.5f;
             for (Sprite* i : sprites) {
-                // if (i->team == team){
+                if (i->team == team){
                     if (i->Type == Sprite_Type::worker_unit){
                         auto TypedI = (Worker*) i;
                         if (TypedI->selected){
@@ -83,42 +84,63 @@ void Game::events(Teams team){
                             TypedI->update_target(ground_intersect);
                         }
                     } 
-                // }
+                }
             }
         }
     }
 
     if (IsMouseButtonPressed(0)){
         corner1 = GetMousePosition();
-        
     }
     if (IsMouseButtonReleased(0)){
         corner2 = GetMousePosition();
-        corner3 = (Vector2){ corner1.x, corner2.y };
-        corner4 = (Vector2){ corner1.y, corner2.x };
 
         for (Sprite* i : sprites) {
-            // if(i->team == team)
-                i->is_selected(ray_ground_intersection(GetMouseRay(corner1, camera)),
-                    ray_ground_intersection(GetMouseRay(corner2, camera)), 
-                    ray_ground_intersection(GetMouseRay(corner3, camera)), 
-                    ray_ground_intersection(GetMouseRay(corner4, camera)));
-            // }
+            if(i->team == team){
+                i->is_selected(corner1, corner2, camera);
+            }
         }
     }
 
     if (IsKeyPressed(KEY_W)){
         for (Sprite* i : sprites) {
-            // if(i->team == team){
+            if(i->team == team){
                 if (i->Type == Sprite_Type::worker_unit){
                     auto typedI = (Worker*) i;
                     if (typedI->selected){
                         typedI->new_mine_area();
                     }
                 }
-            // }
+            }
         }
     }
+
+    if (IsKeyPressed(KEY_A)){
+        for (Sprite* i : sprites) {
+            if(i->team == team){
+                if (i->Type == Sprite_Type::archer_unit){
+                    auto typedI = (Archer*) i;
+                    if (typedI->selected){
+                        typedI->toggle_attack();
+                    }
+                }
+            }
+        }
+    }
+
+    // add points when the timer expires
+    if(points_timer <= 0.0f){
+        if(team == Teams::red_team){
+            points += env->get_number_of(Tiles::red_tile);
+        }else if(team == Teams::blue_team){
+            points += env->get_number_of(Tiles::blue_tile);
+        }
+        points_timer = point_countdown;
+    } else{
+        points_timer -= GetFrameTime();
+    }
+
+
 }
 
 Game::~Game(){
@@ -148,7 +170,7 @@ void C_Game::run_game(){
     while (!WindowShouldClose()){ // Detect window close button or ESC key
         network();
         events(Teams::red_team);
-        event_update_draw();
+        update_draw();
     }
 
     CloseWindow();
@@ -159,19 +181,60 @@ void C_Game::init_network(){
 }
 
 void C_Game::network(){
-    std::vector<Byte> bytes = client.recieve();
-    for (Byte i: bytes){
-        i.print();
-        std::cout << ", ";
-    }
-    Deserialise unpack(bytes);
+    //send
+    Serialise pack;
+
     for(Sprite* i: sprites){
-        if(unpack.get_next_type() != Data_Types::finished){
-            i->position.x = unpack.get_real();
-            i->position.z = unpack.get_real();
+        if(i->team == Teams::red_team){
+            pack = pack << i->position.x << i->position.z;
         }
     }
+    for(Sprite* i: sprites){
+        if(i->team == Teams::blue_team){
+            pack = pack << i->health;
+        }
+    }
+
+    Tile_Change changed_tile =  env->get_changed_tile();
+    pack = pack << (int)changed_tile.pos << (int)changed_tile.new_type;
+
+    client.write(pack.get_bytes());
+
+    // recieve
+    std::vector<Byte> bytes = client.recieve();
+
+    Deserialise unpack(bytes);
+    for(Sprite* i: sprites){
+        if (i->team == Teams::blue_team){
+            if(unpack.get_next_type() != Data_Types::finished){
+                float temp;
+                temp = unpack.get_real();
+                if(temp != 0.0f){
+                    i->position.x = temp;
+                }
+                temp = unpack.get_real();
+                if(temp != 0.0f){
+                    i->position.z = temp;
+                }
+            }
+        }
+    }
+    for(Sprite* i: sprites){
+        if (i->team == Teams::red_team){
+            if(unpack.get_next_type() != Data_Types::finished){
+                float temp;
+                temp = unpack.get_real();
+                if(temp != 0.0f){
+                    i->health = temp;
+                }
+            }
+        }
+    }
+    int pos = unpack.get_int();
+    int type = unpack.get_int();
+    env->update_tile(pos, (Tiles)type);
 }
+
 
 
 void S_Game::run_game(){
@@ -181,7 +244,7 @@ void S_Game::run_game(){
     while (!WindowShouldClose()){ // Detect window close button or ESC key
         network();
         events(Teams::blue_team);
-        event_update_draw();
+        update_draw();
     }
 
     CloseWindow();
@@ -192,9 +255,68 @@ void S_Game::init_network(){
 }
 
 void S_Game::network(){
+    //send
     Serialise pack;
     for(Sprite* i: sprites){
-        pack = pack << i->position.x << i->position.z;
+        if(i->team == Teams::blue_team){
+            pack = pack << i->position.x << i->position.z;
+        }
     }
+    for(Sprite* i: sprites){
+        if(i->team == Teams::red_team){
+            pack = pack << i->health;
+        }
+    }
+
+    // send environment updates
+    Tile_Change changed_tile =  env->get_changed_tile();
+    pack = pack << (int)changed_tile.pos << (int)changed_tile.new_type;
+
     server.write(pack.get_bytes());
+
+    //recieve
+    std::vector<Byte> bytes = server.recieve();
+
+    Deserialise unpack(bytes);
+    for(Sprite* i: sprites){
+        if (i->team == Teams::red_team){
+            if(unpack.get_next_type() != Data_Types::finished){
+                float temp;
+                temp = unpack.get_real();
+                if(temp != 0.0f){
+                    i->position.x = temp;
+                }
+                temp = unpack.get_real();
+                if(temp != 0.0f){
+                    i->position.z = temp;
+                }
+            }
+        }
+    }
+    for(Sprite* i: sprites){
+        if (i->team == Teams::blue_team){
+            if(unpack.get_next_type() != Data_Types::finished){
+                float temp;
+                temp = unpack.get_real();
+                if(temp != 0.0f){
+                    i->health = temp;
+                }
+            }
+        }
+    }
+    int pos = unpack.get_int();
+    int type = unpack.get_int();
+    env->update_tile(pos, (Tiles)type);
+}
+
+void L_Game::run_game(){
+    std::cout << "running" << std::endl;
+    initialise_game();
+    while (!WindowShouldClose()){ // Detect window close button or ESC key
+        events(Teams::blue_team);
+        events(Teams::red_team);
+        update_draw();
+    }
+
+    CloseWindow();
 }

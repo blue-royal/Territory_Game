@@ -21,21 +21,26 @@ class Node
         unsigned int index;
         int previous = -1;
         float heuristic(Vector2 end);
+};
 
 
+// all tile types
+enum class Tiles: int { neutral_tile, red_tile, blue_tile, obstical_tile, air_tile  };
 
+struct Tile_Change{
+    unsigned int pos;
+    Tiles new_type;
 };
 
 class Environment
 {
     private:
-        // all tile types
-        enum Tiles { neutral_tile, red_tile, blue_tile, obstical_tile, air_tile  };
         // grid width and height
         unsigned int width;
         unsigned int height;
         // linear grid of all tile types
         std::vector<Tiles> grid;
+        Tile_Change changed_tile;
         // all block type models
         Model red_block;
         Model blue_block; 
@@ -58,7 +63,10 @@ class Environment
         Vector2 gen_route(Vector2 start, Vector2 end);
         Vector2 closest_neutral(Vector2 pos, Vector2 target);
         bool is_neutral(Vector2 pos);
+        Tile_Change get_changed_tile();
+        unsigned int get_number_of(Tiles tile_type);
         void update_tile(Vector2 pos, Teams team);
+        void update_tile(int pos, Tiles new_tile);
         void create_graph();
         void draw();
         ~Environment();

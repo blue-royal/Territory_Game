@@ -37,28 +37,14 @@ void Server::accepting(){
 }
 
 void Server::write(std::vector<Byte> to_send){
-    unsigned int counter = 0;
-    for (Byte i: to_send){
-        i.print();
-        std::cout << ", ";
-        counter++;
-    }
-    std::cout << std::endl;
-    if (counter == 0){
-        std::cout << "DEBUG SERVER nothing sent" << std::endl;
-    }
-
-    std::cout << "server sending" << std::endl;
     err = send(new_socket, &to_send[0], to_send.size(), MSG_DONTWAIT);
     if (err < 0){
         std::cout << "ERROR SERVER writing to socket" << std::endl;
     } 
-    std::cout << "server sent" << std::endl;
 }
 
 std::vector<Byte> Server::recieve(){
-    std::cout << "server recieving" << std::endl;
-    std::vector<Byte> buffer(256, 0);
+    std::vector<Byte> buffer(512, 0);
 
     err = recv(new_socket, &buffer[0], buffer.size(), MSG_DONTWAIT);
 
@@ -68,14 +54,13 @@ std::vector<Byte> Server::recieve(){
     else{
         buffer.resize(err);
     }
-    std::cout << "server recieved" << std::endl;
 
     return buffer;
 }
 
 Server::~Server(){
     // shutdown(new_socket, SHUT_RDWR);
-    shutdown(server_socket, SHUT_RDWR); 
+    // shutdown(server_socket, SHUT_RDWR); 
 }
 
 
@@ -118,8 +103,7 @@ Client::Client(unsigned short port){
 }
 
 std::vector<Byte> Client::recieve(){
-    // std::cout << "client recieving" << std::endl;
-    std::vector<Byte> buffer(256, 0);
+    std::vector<Byte> buffer(512, 0);
 
     err = recv(server_socket, &buffer[0], buffer.size(), MSG_DONTWAIT);
     if (errno == EWOULDBLOCK){
@@ -132,31 +116,14 @@ std::vector<Byte> Client::recieve(){
         buffer.resize(err);
     }
 
-    unsigned int counter = 0;
-    std::cout << "client recieved" << std::endl;
-    for(Byte i: buffer){
-        i.print();
-        std::cout << ", ";
-        counter ++;
-    }
-    std::cout << std::endl;
-
-    if (counter == 0){
-        std::cout << "DEBUG CLIENT nothing recieved" << std::endl;
-    }
-
     return buffer;
 }
 
 void Client::write(std::vector<Byte> to_send){
-    std::cout << "client sending" << std::endl;
     unsigned int counter = 0;
     for (Byte i: to_send){
-        i.print();
-        std::cout << ", ";
         counter++;
     }
-    std::cout << std::endl;
     if (counter == 0){
         std::cout << "DEBUG CLIENT nothing sent" << std::endl;
     }
@@ -165,7 +132,6 @@ void Client::write(std::vector<Byte> to_send){
     if (err < 0) {
         std::cout << "ERROR CLIENT writing to socket" << std::endl;
     }
-    std::cout << "client sent" << std::endl;
 
 }
 

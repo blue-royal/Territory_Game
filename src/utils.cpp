@@ -50,7 +50,7 @@ bool circle_circle_intersection(Vector2 center1, Vector2 center2, float radius1,
 }
 
 Vector3 move_to_target(Vector3 position, Vector3 target, float speed){
-    return Vector3Add(position, Vector3Scale( Vector3Normalize( Vector3Subtract(target, position) ), speed));
+    return Vector3Add(position, Vector3Scale( Vector3Normalize( Vector3Subtract(target, position) ), speed * GetFrameTime()));
 }
 
 Vector2 vec3_to_vec2(Vector3 vec){

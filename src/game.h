@@ -8,19 +8,26 @@
 #include "network.h"
 #include <iostream>
 #include <vector>
+#include <string>
 
 
 class Game{
     protected:
         void initialise_game();
-        void event_update_draw();
+        void update_draw();
         void events(Teams team);
 
         Environment* env;
         std::vector<Sprite*> sprites;
-        
+
+        Vector2 corner1;
 
         Camera camera;
+
+        float points = 0;
+        float points_timer = 10.0f;
+        float point_countdown = 10.0f;
+
 
     public:
         Game();
@@ -47,6 +54,13 @@ class S_Game: public Game
         Server server;
         void network();
         void init_network();
+};
+
+class L_Game: public Game
+{
+    public:
+        L_Game() = default;
+        void run_game();
 };
 
 #endif

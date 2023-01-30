@@ -21,7 +21,8 @@ Archer::Archer(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprit
     goal = start;
     reached_goal = true;
 
-    speed = 0.06f;
+    speed = 2.3f;
+    set_health(200.0f);
     
 }
 
@@ -36,9 +37,24 @@ void Archer::update(std::vector<Sprite*> sprites){
         update_target(goal);
     }
 
+    if (attack_mode && cool_down < 0.0f){
+        for (Sprite* i : sprites) {
+            if(i->team != team){
+                if(Vector3DistanceSqr(i->position, position) < range){
+                    i->decrease_health(damage);
+                    cool_down = cool_down_time;
+                }
+            }
+        }
+    }
+
+    if (cool_down >= 0.0f){
+        cool_down -= GetFrameTime();
+    }
+
     // move the player towards the target by their speed
     // if the player hasn't reached the goal
-    if (!reached_goal){
+    if (!reached_goal && cool_down < 0.0f){
         // check any collision that the agent is making with other agents of the obsticals
 
         // look ahead to see if there are any obsticals in the way and adjust accordingly
@@ -52,7 +68,6 @@ void Archer::update(std::vector<Sprite*> sprites){
             position = move_to_target(position, Vector3Add(ahead, avoidance_force), speed);
             
         } else {
-        
             bool blockage = false;
             for (Sprite* i : sprites) {
                 if (circle_circle_intersection(vec3_to_vec2(position), vec3_to_vec2(i->position), 0.3f, 0.3f)){
@@ -103,11 +118,16 @@ void Archer::draw(){
     if (selected){
         DrawModel(halo_model, position, 0.3f, WHITE);
     }
+
 }
 
-
-void Archer::decrease_health(float damage){
-    health -= damage;
+void Archer::toggle_attack(){
+    if (attack_mode == false){
+        attack_mode = true;
+    }
+    else{
+        attack_mode = false;
+    }
 }
 
 Archer::~Archer(){

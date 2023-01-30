@@ -6,6 +6,7 @@
 
 #define SERVER 0
 #define CLIENT 1
+#define LOCAL 2
 
 int main() {
 
@@ -22,6 +23,13 @@ int main() {
     else if (res == CLIENT)
     {
         C_Game* territory_game = new C_Game();
+        territory_game->run_game();
+
+        delete territory_game;
+    }
+    else if (res == LOCAL)
+    {
+        L_Game* territory_game = new L_Game();
         territory_game->run_game();
 
         delete territory_game;

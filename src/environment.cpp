@@ -35,19 +35,19 @@ void Environment::load_level(char *level_path){
             switch (layer[j])
             {
             case '0':
-                grid.push_back(air_tile);
+                grid.push_back(Tiles::air_tile);
                 break;
             case '1':
-                grid.push_back(neutral_tile);
+                grid.push_back(Tiles::neutral_tile);
                 break;
             case '2':
-                grid.push_back(blue_tile);
+                grid.push_back(Tiles::blue_tile);
                 break;
             case '3':
-                grid.push_back(red_tile);
+                grid.push_back(Tiles::red_tile);
                 break;
             case '4':
-                grid.push_back(obstical_tile);
+                grid.push_back(Tiles::obstical_tile);
                 break;
             default:
                 std::cout << "Couldn't find tile type" << std::endl;
@@ -65,7 +65,7 @@ Vector2 Environment::closest_neutral(Vector2 pos, Vector2 target){
     Vector2 current_return = (Vector2){  0.0f, 0.0f };
 
     for (std::vector<Tiles>::iterator i = grid.begin(); i != grid.end(); i++) {
-        if (*i == neutral_tile){
+        if (*i == Tiles::neutral_tile){
             x = counter%width;
             z = (int)(counter/width);
 
@@ -92,7 +92,7 @@ bool Environment::is_neutral(Vector2 pos){
     }
 
     // if the tile is an obstical or air tile then it is invalid
-    if(grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] == neutral_tile){
+    if(grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] == Tiles::neutral_tile){
         return true;
     }
     return false;
@@ -106,7 +106,7 @@ void Environment::create_graph(){
     float z;
     // vector of all possible nodes is made from all nodes diagnonal to an obstical tile
     for (Tiles i : grid){
-        if (i == obstical_tile){
+        if (i == Tiles::obstical_tile){
             x = counter%width;
             z = (int)(counter/width);
 
@@ -141,24 +141,24 @@ void Environment::create_graph(){
         to_remove = false;
         curr_tile = grid[i->coords.x + (i->coords.y * width)];
         // if the node is an obstical or air tile remove it        
-        if (curr_tile == obstical_tile || curr_tile == air_tile){
+        if (curr_tile == Tiles::obstical_tile || curr_tile == Tiles::air_tile){
             to_remove = true;
         }
         // if the node is adjacent to an obstical or remove it
         left_tile = grid[i->coords.x + 1 + (i->coords.y * width)];
-        if (left_tile == obstical_tile){
+        if (left_tile == Tiles::obstical_tile){
             to_remove = true;
         }
         right_tile = grid[i->coords.x - 1 + (i->coords.y * width)];
-        if (right_tile == obstical_tile){
+        if (right_tile == Tiles::obstical_tile){
             to_remove = true;
         }
         up_tile = grid[i->coords.x + ((i->coords.y + 1) * width)];
-        if (up_tile == obstical_tile){
+        if (up_tile == Tiles::obstical_tile){
             to_remove = true;
         }
         down_tile = grid[i->coords.x + ((i->coords.y - 1) * width)];
-        if (down_tile == obstical_tile){
+        if (down_tile == Tiles::obstical_tile){
             to_remove = true;
         }
 
@@ -343,10 +343,10 @@ bool Environment::valid_target(Vector2 target){
     // if the tile is an obstical or air tile then it is invalid
     switch (grid[static_cast<int>(target.x) + (static_cast<int>(target.y) * width)])
     {
-    case obstical_tile:
+    case Tiles::obstical_tile:
         return false;
         break;
-    case air_tile:
+    case Tiles::air_tile:
         return false;
         break;
     default:
@@ -357,10 +357,17 @@ bool Environment::valid_target(Vector2 target){
 
 void Environment::update_tile(Vector2 pos, Teams team){
     if (team == Teams::red_team){
-        grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] = red_tile;
+        grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] = Tiles::red_tile;
+        changed_tile.new_type = Tiles::red_tile;
+        changed_tile.pos = static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width);
     } else if (team == Teams::blue_team){
-        grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] = blue_tile;
+        grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] = Tiles::blue_tile;
+        changed_tile.pos = static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width);
+        changed_tile.new_type = Tiles::blue_tile;
     }
+}
+void Environment::update_tile(int pos, Tiles new_tile){
+    grid[pos] = new_tile;
 }
 
 void Environment::draw(){
@@ -370,27 +377,41 @@ void Environment::draw(){
         float z = (int)(counter/width);
         switch (*i)
         {
-        case blue_tile:
+        case Tiles::blue_tile:
             DrawModel(blue_block, (Vector3){x, -1.0f, z }, 0.5f, BLUE);
             break;
-        case red_tile:
+        case Tiles::red_tile:
             DrawModel(red_block, (Vector3){x, -1.0f, z }, 0.5f, RED);
             break;
-        case neutral_tile:
+        case Tiles::neutral_tile:
             DrawModel(neutral_block, (Vector3){x, -1.0f, z }, 0.5f, WHITE);
             break;
-        case obstical_tile:
+        case Tiles::obstical_tile:
             DrawModel(obstical_block, (Vector3){x, -1.0f, z }, 0.5f, WHITE);
             break;
-        case air_tile:
+        case Tiles::air_tile:
             break;        
         default:
-            std::cout << "couldn't detect tile type" << *i << std::endl;
+            std::cout << "couldn't detect tile type" << std::endl;
             break;
         }
         counter++;
     }
     
+}
+
+Tile_Change Environment::get_changed_tile(){
+    return changed_tile;
+}
+
+unsigned int Environment::get_number_of(Tiles tile_type){
+    unsigned int count = 0;
+    for (Tiles i: grid){
+        if (i == tile_type){
+            count ++;
+        }
+    }
+    return count;
 }
 
 Environment::~Environment(){

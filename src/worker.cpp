@@ -20,8 +20,9 @@ Worker::Worker(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprit
     goal = start;
     reached_goal = true;
 
-    speed = 0.04f;
+    speed = 1.5f;
     working_time = 0.0f;
+    set_health(100.0f);
     
 }
 
@@ -117,6 +118,7 @@ void Worker::draw(){
     if (selected){
         DrawModel(halo_model, position, 0.3f, YELLOW);
     }
+
 }
 
 void Worker::new_node_in_region(){
@@ -128,10 +130,6 @@ void Worker::new_node_in_region(){
 void Worker::new_mine_area(){
     mine_area = vec3_to_vec2(position);
     new_node_in_region();
-}
-
-void Worker::decrease_health(float damage){
-    health -= damage;
 }
 
 Worker::~Worker(){

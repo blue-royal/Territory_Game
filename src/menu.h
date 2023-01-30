@@ -6,7 +6,8 @@
 
 #define SERVER 0
 #define CLIENT 1
-#define QUIT 2
+#define LOCAL 2
+#define QUIT 3
 
 class Button
 {
