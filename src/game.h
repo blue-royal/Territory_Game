@@ -10,12 +10,17 @@
 #include <vector>
 #include <string>
 
+#define WORKER_COST 20.0f
+#define ARCHER_COST 40.0f
+
+enum class Network_Headers : int {null, add_worker, delete_sprite, add_archer, update_sprites, update_terrain};
 
 class Game{
     protected:
         void initialise_game();
         void update_draw();
         void events(Teams team);
+        void delete_sprite(unsigned int index);
 
         Environment* env;
         std::vector<Sprite*> sprites;
@@ -43,6 +48,10 @@ class C_Game: public Game
         Client client;
         void network();
         void init_network();
+
+        Vector3 spawn = Vector3 {14.0f, 0.0f, 4.0f};
+        Vector3 other_spawn = Vector3 {4.0f, 0.0f, 14.0f};
+
 };
 
 class S_Game: public Game
@@ -54,6 +63,9 @@ class S_Game: public Game
         Server server;
         void network();
         void init_network();
+
+        Vector3 spawn = Vector3 {4.0f, 0.0f, 14.0f};
+        Vector3 other_spawn = Vector3 {14.0f, 0.0f, 4.0f};
 };
 
 class L_Game: public Game

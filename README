@@ -29,3 +29,8 @@ minimap
 
 
 save funtion - write up - not needed and reasons.
+
+possible bug - if health is exactly zero it doesn't send
+bug issue with points not starting at the smae time due to the server having an extednded initial frame time
+change position data to an update position data
+Client side prediction - buy sending the target node.

@@ -65,3 +65,6 @@ bool reached_target(Vector3 pos, Vector3 target){
     return abs(pos.x - target.x) < 0.05f && abs(pos.z - target.z) < 0.05f ;
 }
 
+Vector2 centralise_vec2(Vector2 vec){
+    return (Vector2){ (float)((int)vec.x)+0.5f, (float)((int)vec.y)+0.5f };
+}

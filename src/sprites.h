@@ -16,7 +16,7 @@ class Sprite
         explicit Sprite(Sprite_Type NType, Teams team) : Type(NType), team(team) {};
         virtual void update(std::vector<Sprite*> sprites);
         virtual void draw();
-        void is_selected(Vector2 corner1, Vector2 corner2, Camera camera);
+        void is_selected(Vector2 corner1, Vector2 corner2, Camera camera, bool keep_existing);
         void decrease_health(float damage);
         void draw_health_bar(Camera cam);
         void set_health(float health);

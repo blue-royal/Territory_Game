@@ -95,9 +95,11 @@ void Game::events(Teams team){
     if (IsMouseButtonReleased(0)){
         corner2 = GetMousePosition();
 
+        bool keep_current_selected = IsKeyDown(KEY_LEFT_SHIFT);
+        
         for (Sprite* i : sprites) {
             if(i->team == team){
-                i->is_selected(corner1, corner2, camera);
+                i->is_selected(corner1, corner2, camera, keep_current_selected);
             }
         }
     }
@@ -143,6 +145,21 @@ void Game::events(Teams team){
 
 }
 
+void Game::delete_sprite(unsigned int index){
+    switch (sprites[index]->Type)
+        {
+        case Sprite_Type::worker_unit:
+            delete (Worker*) sprites[index];
+            break;
+        case Sprite_Type::archer_unit:
+            delete (Archer*) sprites[index];
+            break;
+        default:
+            break;
+        }
+        sprites.erase(sprites.begin()+index);
+}
+
 Game::~Game(){
     delete env;
     
@@ -184,6 +201,37 @@ void C_Game::network(){
     //send
     Serialise pack;
 
+    unsigned int counter = 0;
+    for(Sprite* i: sprites){
+        if(i->team == Teams::blue_team){
+            if (i->health <= 0.0f){
+                delete_sprite(counter);
+                pack = pack << (int) Network_Headers::delete_sprite << (int)counter + 1;
+            }
+        }
+        counter++;
+    }
+
+     if (IsKeyPressed(KEY_Q)){
+        if(points > WORKER_COST){
+            std::cout << "new worker made" << std::endl;
+            points -= WORKER_COST;
+            sprites.push_back(new Worker(spawn, Teams::red_team, env));
+            pack = pack << (int)Network_Headers::add_worker;
+        }
+
+    }
+
+    if (IsKeyPressed(KEY_S)){
+        if(points > ARCHER_COST){
+            std::cout << "new archer made" << std::endl;
+            points -= ARCHER_COST;
+            sprites.push_back(new Archer(spawn, Teams::red_team, env));
+            pack = pack << (int)Network_Headers::add_archer;
+        }
+    }
+
+    pack = pack << (int)Network_Headers::update_sprites;
     for(Sprite* i: sprites){
         if(i->team == Teams::red_team){
             pack = pack << i->position.x << i->position.z;
@@ -195,6 +243,7 @@ void C_Game::network(){
         }
     }
 
+    pack = pack << (int)Network_Headers::update_terrain;
     Tile_Change changed_tile =  env->get_changed_tile();
     pack = pack << (int)changed_tile.pos << (int)changed_tile.new_type;
 
@@ -204,35 +253,65 @@ void C_Game::network(){
     std::vector<Byte> bytes = client.recieve();
 
     Deserialise unpack(bytes);
-    for(Sprite* i: sprites){
-        if (i->team == Teams::blue_team){
-            if(unpack.get_next_type() != Data_Types::finished){
-                float temp;
-                temp = unpack.get_real();
-                if(temp != 0.0f){
-                    i->position.x = temp;
+    Network_Headers section_type = (Network_Headers) unpack.get_int();
+
+    while (section_type == Network_Headers::delete_sprite){
+        int index = unpack.get_int() - 1;
+        if (index != -1){
+            delete_sprite(index);
+        }
+        section_type = (Network_Headers) unpack.get_int();
+    }
+
+    while (section_type == Network_Headers::add_worker){
+        std::cout << "new worker" << std::endl;
+        sprites.push_back(new Worker(other_spawn, Teams::blue_team, env));
+        section_type = (Network_Headers) unpack.get_int();
+    }
+
+    while(section_type == Network_Headers::add_archer){
+        std::cout << "new archer" << std::endl;
+        sprites.push_back(new Archer(other_spawn, Teams::blue_team, env));
+        section_type = (Network_Headers) unpack.get_int();
+    }
+
+    if (section_type == Network_Headers::update_sprites){
+        for(Sprite* i: sprites){
+            if (i->team == Teams::blue_team){
+                if(unpack.get_next_type() != Data_Types::finished){
+                    float temp;
+                    temp = unpack.get_real();
+                    if(temp != 0.0f){
+                        i->position.x = temp;
+                    }
+                    temp = unpack.get_real();
+                    if(temp != 0.0f){
+                        i->position.z = temp;
+                    }
                 }
-                temp = unpack.get_real();
-                if(temp != 0.0f){
-                    i->position.z = temp;
+            }
+        }
+        for(Sprite* i: sprites){
+            if (i->team == Teams::red_team){
+                if(unpack.get_next_type() != Data_Types::finished){
+                    float temp;
+                    temp = unpack.get_real();
+                    if(temp != 0.0f){
+                        i->health = temp;
+                    }
                 }
             }
         }
     }
-    for(Sprite* i: sprites){
-        if (i->team == Teams::red_team){
-            if(unpack.get_next_type() != Data_Types::finished){
-                float temp;
-                temp = unpack.get_real();
-                if(temp != 0.0f){
-                    i->health = temp;
-                }
+    if(unpack.get_int() == (int)Network_Headers::update_terrain){
+        while (unpack.get_next_type() != Data_Types::finished){
+            int pos = unpack.get_int();
+            int type = unpack.get_int();
+            if(pos != 0 && type != 0){
+                env->update_tile(pos, (Tiles)type);
             }
         }
     }
-    int pos = unpack.get_int();
-    int type = unpack.get_int();
-    env->update_tile(pos, (Tiles)type);
 }
 
 
@@ -257,6 +336,38 @@ void S_Game::init_network(){
 void S_Game::network(){
     //send
     Serialise pack;
+
+    unsigned int counter = 0;
+    for(Sprite* i: sprites){
+        if(i->team == Teams::red_team){
+            if (i->health <= 0.0f){
+                delete_sprite(counter);
+                pack = pack << (int) Network_Headers::delete_sprite << (int)counter + 1;
+            }
+        }
+        counter++;
+    }
+
+    if (IsKeyPressed(KEY_Q)){
+        if(points > WORKER_COST){
+            std::cout << "new worker made" << std::endl;
+            points -= WORKER_COST;
+            sprites.push_back(new Worker(spawn, Teams::blue_team, env));
+            pack = pack << (int)Network_Headers::add_worker;
+        }
+
+    }
+
+    if (IsKeyPressed(KEY_S)){
+        if(points > ARCHER_COST){
+            std::cout << "new archer made" << std::endl;
+            points -= ARCHER_COST;
+            sprites.push_back(new Archer(spawn, Teams::blue_team, env));
+            pack = pack << (int)Network_Headers::add_archer;
+        }
+    }
+
+    pack = pack << (int)Network_Headers::update_sprites;
     for(Sprite* i: sprites){
         if(i->team == Teams::blue_team){
             pack = pack << i->position.x << i->position.z;
@@ -269,6 +380,7 @@ void S_Game::network(){
     }
 
     // send environment updates
+    pack = pack << (int)Network_Headers::update_terrain;
     Tile_Change changed_tile =  env->get_changed_tile();
     pack = pack << (int)changed_tile.pos << (int)changed_tile.new_type;
 
@@ -278,37 +390,69 @@ void S_Game::network(){
     std::vector<Byte> bytes = server.recieve();
 
     Deserialise unpack(bytes);
-    for(Sprite* i: sprites){
-        if (i->team == Teams::red_team){
-            if(unpack.get_next_type() != Data_Types::finished){
-                float temp;
-                temp = unpack.get_real();
-                if(temp != 0.0f){
-                    i->position.x = temp;
-                }
-                temp = unpack.get_real();
-                if(temp != 0.0f){
-                    i->position.z = temp;
-                }
-            }
-        }
-    }
-    for(Sprite* i: sprites){
-        if (i->team == Teams::blue_team){
-            if(unpack.get_next_type() != Data_Types::finished){
-                float temp;
-                temp = unpack.get_real();
-                if(temp != 0.0f){
-                    i->health = temp;
-                }
-            }
-        }
-    }
-    int pos = unpack.get_int();
-    int type = unpack.get_int();
-    env->update_tile(pos, (Tiles)type);
-}
+    Network_Headers section_type = (Network_Headers) unpack.get_int();
 
+    while (section_type == Network_Headers::delete_sprite){
+        int index = unpack.get_int() - 1;
+        if (index != -1){
+            delete_sprite(index);
+        }
+        
+        section_type = (Network_Headers) unpack.get_int();
+    }
+
+    while (section_type == Network_Headers::add_worker){
+        std::cout << "new worker" << std::endl;
+        sprites.push_back(new Worker(other_spawn, Teams::red_team, env));
+        section_type = (Network_Headers) unpack.get_int();
+    }
+
+    while(section_type == Network_Headers::add_archer){
+        std::cout << "new archer" << std::endl;
+        sprites.push_back(new Archer(other_spawn, Teams::red_team, env));
+        section_type = (Network_Headers) unpack.get_int();
+    }
+
+
+    if (section_type == Network_Headers::update_sprites){
+        for(Sprite* i: sprites){
+            if (i->team == Teams::red_team){
+                if(unpack.get_next_type() != Data_Types::finished){
+                    float temp;
+                    temp = unpack.get_real();
+                    if(temp != 0.0f){
+                        i->position.x = temp;
+                    }
+                    temp = unpack.get_real();
+                    if(temp != 0.0f){
+                        i->position.z = temp;
+                    }
+                }
+            }
+        }
+        for(Sprite* i: sprites){
+            if (i->team == Teams::blue_team){
+                if(unpack.get_next_type() != Data_Types::finished){
+                    float temp;
+                    temp = unpack.get_real();
+                    if(temp != 0.0f){
+                        i->health = temp;
+                    }
+                }
+            }
+        }
+    }
+
+    if(unpack.get_int() == (int)Network_Headers::update_terrain){
+        while (unpack.get_next_type() != Data_Types::finished){
+            int pos = unpack.get_int();
+            int type = unpack.get_int();
+            if(pos != 0 && type != 0){
+                env->update_tile(pos, (Tiles)type);
+            }
+        }
+    }
+}
 void L_Game::run_game(){
     std::cout << "running" << std::endl;
     initialise_game();

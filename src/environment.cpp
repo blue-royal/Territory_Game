@@ -179,7 +179,7 @@ void Environment::create_graph(){
     graph_size = all_nodes.size();
     for (unsigned int i = 0; i < graph_size-2; i++){
         for (unsigned int j = 0; j < graph_size-2; j++){
-            if (valid_route(all_nodes[i].coords, all_nodes[j].coords) && valid_route(all_nodes[j].coords, all_nodes[i].coords)){
+            if (valid_route(centralise_vec2(all_nodes[i].coords), centralise_vec2(all_nodes[j].coords)) && valid_route(centralise_vec2(all_nodes[j].coords), centralise_vec2(all_nodes[i].coords))){
                 nav_graph.push_back(Vector2Distance(all_nodes[i].coords, all_nodes[j].coords));
             }else{
                 nav_graph.push_back(-1);
@@ -202,7 +202,7 @@ void Environment::create_graph(){
 
 bool Environment::valid_route(Vector2 start, Vector2 end){
     float dx, dy, x, y;
-    int len;
+    float len;
 
     dx = end.x - start.x;
     dy = end.y - start.y;
@@ -211,13 +211,13 @@ bool Environment::valid_route(Vector2 start, Vector2 end){
     y = start.y;
     
     if (abs(dy) < abs(dx)){
-        len = abs(dx);
-        dy = dy / abs(dx);
-        dx = dx / abs(dx);
+        len = abs(dx) * 3;
+        dy = dy / len;
+        dx = dx / len;
     } else {
-        len = abs(dy);
-        dx = dx / abs(dy);
-        dy = dy / abs(dy);
+        len = abs(dy)*3;
+        dx = dx / len;
+        dy = dy / len;
     }
     for (int i = 0; i <= len; i ++){
         if (!valid_target((Vector2){ x, y })){
@@ -240,7 +240,7 @@ Vector2 Environment::gen_route(Vector2 start, Vector2 end){
     Node finish = Node(end);
     // otherwise add the start and end node to the graph
     for (unsigned int i = 0; i < graph_size-2; i++){
-        if (valid_route(start, all_nodes[i].coords) && valid_route(all_nodes[i].coords, start)){
+        if (valid_route(start, centralise_vec2(all_nodes[i].coords)) &&  valid_route(centralise_vec2(all_nodes[i].coords), start)){
             nav_graph[(graph_size-2)*graph_size + i] = Vector2Distance(start, all_nodes[i].coords);
             nav_graph[i*graph_size + (graph_size-2)] = Vector2Distance(start, all_nodes[i].coords);
         }else{
@@ -248,9 +248,9 @@ Vector2 Environment::gen_route(Vector2 start, Vector2 end){
             nav_graph[i*graph_size + (graph_size-2)] = -1;
         }
     
-        if (valid_route(end, all_nodes[i].coords) && valid_route(all_nodes[i].coords, end)){
-            nav_graph[(graph_size-1)*graph_size + i] = Vector2Distance(end, all_nodes[i].coords);
-            nav_graph[i*graph_size + (graph_size-1)] = Vector2Distance(end, all_nodes[i].coords);
+        if (valid_route(end, centralise_vec2(all_nodes[i].coords)) && valid_route(centralise_vec2(all_nodes[i].coords), end)){
+            nav_graph[(graph_size-1)*graph_size + i] = Vector2Distance(end, centralise_vec2(all_nodes[i].coords));
+            nav_graph[i*graph_size + (graph_size-1)] = Vector2Distance(end, centralise_vec2(all_nodes[i].coords));
         }else{
             nav_graph[(graph_size-1)*graph_size + i] = -1;
             nav_graph[i*graph_size + (graph_size-1)] = -1;
@@ -301,7 +301,7 @@ Vector2 Environment::gen_route(Vector2 start, Vector2 end){
                     
                 }
 
-                return all_nodes[temp].coords;
+                return centralise_vec2(all_nodes[temp].coords);
             }
             open_set.erase(open_set.begin() + min_f_score_index);
 
