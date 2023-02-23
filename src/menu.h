@@ -1,5 +1,5 @@
-#ifndef __MENU__
-#define __MENU__
+#ifndef MENU__
+#define MENU__
 
 #include "raylib.h"
 #include "raymath.h"

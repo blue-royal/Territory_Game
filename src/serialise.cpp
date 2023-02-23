@@ -22,7 +22,6 @@ Serialise Serialise::operator << (int integer){
     length += 4;
 
     return *this;
-    
 }
 
 Serialise Serialise::operator << (bool booleans){

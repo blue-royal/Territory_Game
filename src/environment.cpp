@@ -21,13 +21,14 @@ Environment::Environment(char *level_path){
     create_graph();
 }
 
-void Environment::load_level(char *level_path){
+void Environment::load_level(char* level_path){
 
     std::vector<std::string> tiles = read_file(level_path);
     height = tiles.size();
     width = tiles[0].size();
 
     // compare each character in text file to build up level vectorr
+    unsigned int counter = 0;
     for (std::vector<std::string>::iterator i = tiles.begin(); i != tiles.end(); i++) {
         std::string layer = *i;
         for (std::string::size_type j = 0; j < layer.size(); j++) {
@@ -49,10 +50,20 @@ void Environment::load_level(char *level_path){
             case '4':
                 grid.push_back(Tiles::obstical_tile);
                 break;
+            case '5':
+                grid.push_back(Tiles::blue_tile);
+                blue_base = (Vector3){ counter%width + 0.5f, 0.0f, (int)(counter/width) + 0.5f };
+                break;
+            case '6':
+                grid.push_back(Tiles::red_tile);
+                red_base = (Vector3){ counter%width + 0.5f, 0.0f, (int)(counter/width) + 0.5f };
+                break;
             default:
                 std::cout << "Couldn't find tile type" << std::endl;
+                grid.push_back(Tiles::air_tile);
                 break;
             }
+            counter ++;
         }
     }
 }

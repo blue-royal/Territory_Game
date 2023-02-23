@@ -8,12 +8,15 @@ Game::Game(){
 void Game::initialise_game(){
 
     env = new Environment((char*)"assets/scene/main_level.txt");
+
+    sprites.push_back(new Tower(env->blue_base, Teams::blue_team));
     sprites.push_back(new Archer((Vector3){ 12.0f, 0.0f, 10.0f }, Teams::blue_team, env));
     sprites.push_back(new Archer((Vector3){ 14.0f, 0.0f, 10.0f }, Teams::blue_team, env));
     sprites.push_back(new Worker((Vector3){ 13.0f, 0.0f, 10.0f }, Teams::blue_team, env));
     sprites.push_back(new Worker((Vector3){ 15.0f, 0.0f, 10.0f }, Teams::blue_team, env));
     sprites.push_back(new Worker((Vector3){ 16.0f, 0.0f, 10.0f }, Teams::blue_team, env));
 
+    sprites.push_back(new Tower(env->red_base, Teams::red_team));
     sprites.push_back(new Archer((Vector3){ 5.0f, 0.0f, 10.0f }, Teams::red_team, env));
     sprites.push_back(new Archer((Vector3){ 5.0f, 0.0f, 11.0f }, Teams::red_team, env));
     sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 12.0f }, Teams::red_team, env));
@@ -54,6 +57,10 @@ void Game::update_draw(){
         }
         // draw the number of resources
         DrawText(std::to_string((int)points).c_str(), 10, 10, 30, BLACK);
+        if(IsMouseButtonDown(0)){
+            Vector2 corner2 = GetMousePosition();
+            DrawRectangle(std::min(corner1.x, corner2.x), std::min(corner1.y, corner2.y), abs(corner1.x - corner2.x), abs(corner1.y - corner2.y), CLITERAL(Color){0, 255, 0, 80});
+        }
     EndDrawing();
 }
 
@@ -154,6 +161,9 @@ void Game::delete_sprite(unsigned int index){
         case Sprite_Type::archer_unit:
             delete (Archer*) sprites[index];
             break;
+        case Sprite_Type::tower_unit:
+            delete (Tower*) sprites[index];
+            break;
         default:
             break;
         }
@@ -173,7 +183,9 @@ Game::~Game(){
         case Sprite_Type::archer_unit:
             delete (Archer*) i;
             break;
-        
+        case Sprite_Type::tower_unit:
+            delete (Tower*) i;
+            break;
         default:
             break;
         }

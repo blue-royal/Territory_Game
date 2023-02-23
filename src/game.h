@@ -1,14 +1,16 @@
-#ifndef __GAME__
-#define __GAME__
+#ifndef GAME__
+#define GAME__
 
 #include "raylib.h"
 #include "environment.h"
 #include "worker.h"
 #include "archer.h"
+#include "tower.h"
 #include "network.h"
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #define WORKER_COST 20.0f
 #define ARCHER_COST 40.0f

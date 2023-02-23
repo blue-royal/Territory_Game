@@ -1,5 +1,5 @@
-#ifndef __ARCHER__
-#define __ARCHER__
+#ifndef ARCHER__
+#define ARCHER__
 
 #include "raylib.h"
 #include "utils.h"

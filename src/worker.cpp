@@ -1,16 +1,16 @@
 #include"worker.h"
 
-Worker::Worker() : Sprite(Sprite_Type::worker_unit, Teams::neutral_team){
-}
+Worker::Worker() : Sprite(Sprite_Type::worker_unit, Teams::neutral_team) {  }
 
 Worker::Worker(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprite_Type::worker_unit, colour){
     // load model shader and relevant positions for the worker
     team = colour;
     env = environ;
 
-    worker_model = LoadModel("assets/models/worker_model/work.glb");
+    worker_model = LoadModel("assets/models/worker_model/work.glb");   
     shader = LoadShader(TextFormat("assets/shaders/lighting.vs"), TextFormat("assets/shaders/lighting.fs", 330));
-    worker_model.materials[0].shader = shader;  
+    
+    worker_model.materials[0].shader = shader; 
 
     halo_model = LoadModel("assets/models/selected_halo/halo.obj");
     halo_model.materials[0].shader = shader;   

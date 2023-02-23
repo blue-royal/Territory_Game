@@ -1,5 +1,5 @@
-#ifndef __NET__
-#define __NET__
+#ifndef NET__
+#define NET__
 
 #pragma region Platform detection
 
@@ -34,7 +34,7 @@
 #include <vector>
 #include <fcntl.h>
 #include <iostream>
-#include <string>
+#include <string.h>
 #include <thread>
 #include<chrono>
 #include "serialise.h"

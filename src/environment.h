@@ -1,5 +1,5 @@
-#ifndef __ENV__
-#define __ENV__
+#ifndef ENV__
+#define ENV__
 
 #include "utils.h"
 
@@ -70,6 +70,9 @@ class Environment
         void create_graph();
         void draw();
         ~Environment();
+
+        Vector3 blue_base;
+        Vector3 red_base;
         
 };
 

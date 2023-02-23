@@ -1,4 +1,5 @@
-#pragma once
+#ifndef UTILS__
+#define UTILS__
 
 #include <iostream>
 #include <fstream>
@@ -24,3 +25,5 @@ Vector2 vec3_to_vec2(Vector3 vec);
 Vector3 vec2_to_vec3_ground(Vector2 vec);
 Vector2 centralise_vec2(Vector2 vec);
 bool reached_target(Vector3 pos, Vector3 target);
+
+#endif

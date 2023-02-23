@@ -1,8 +1,9 @@
-#ifndef __SERIALISE__
-#define __SERIALISE__
+#ifndef SERIALISE__
+#define SERIALISE__
 
 #include <iostream>
 #include <vector>
+#include <string.h>
 
 class Byte
 {

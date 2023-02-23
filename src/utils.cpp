@@ -1,6 +1,6 @@
 #include "utils.h"
 
-std::vector<std::string> read_file(char *path){
+std::vector<std::string> read_file(char* path){
     std::fstream newfile;
     std::vector<std::string> new_text;
     newfile.open(path,std::ios::in); //open a file to perform read operation using file object
@@ -20,10 +20,10 @@ bool ray_sphere_intersection(Ray ray, Vector3 center, float radius){
     
     Vector3 ray_to_sphere = Vector3Add(ray.position, Vector3Negate(center));
     float b = 2.0f * Vector3DotProduct(Vector3Normalize(ray.direction), ray_to_sphere);
-    float c = std::powf(Vector3Length(ray_to_sphere), 2.0f) - std::powf(radius, 2.0f);
+    float c = std::pow(Vector3Length(ray_to_sphere), 2.0f) - std::pow(radius, 2.0f);
 
     // if discriminant is greater than zero then they intersect
-    if (std::powf(b, 2) - (4*c) >= 0.0f){
+    if (std::pow(b, 2) - (4*c) >= 0.0f){
         return true;
         std::cout << "worked" << std::endl;
     } 

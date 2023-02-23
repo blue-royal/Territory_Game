@@ -1,12 +1,12 @@
-#ifndef __UTILS__
-#define __UTILS__
+#ifndef SPRITES__
+#define SPRITES__
 
 #include "raylib.h"
 #include "raymath.h"
 #include "environment.h"
 #include <iostream>
 
-enum class Sprite_Type : int {worker_unit, archer_unit};
+enum class Sprite_Type : int {worker_unit, archer_unit, tower_unit};
 
 class Sprite
 {

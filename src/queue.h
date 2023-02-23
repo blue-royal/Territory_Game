@@ -1,5 +1,5 @@
-#ifndef __QUEUE__
-#define __QUEUE__
+#ifndef QUEUE__
+#define QUEUE__
 
 #include <vector>
 

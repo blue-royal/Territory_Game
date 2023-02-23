@@ -1,5 +1,5 @@
-#ifndef __WORKER__
-#define __WORKER__
+#ifndef WORKER__
+#define WORKER__
 
 #include "raylib.h"
 #include "utils.h"
@@ -10,14 +10,15 @@
 
 class Worker: public Sprite
 {
+
     private:
 
         enum class State : int { idle_state, working_state  };
 
-        Model worker_model;
-        
-        Shader shader;
         Environment* env;
+
+        Model worker_model;
+        Shader shader;
 
         Model halo_model;
 
