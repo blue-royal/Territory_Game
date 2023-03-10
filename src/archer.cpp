@@ -32,19 +32,28 @@ void Archer::update(std::vector<Sprite*> sprites){
     if(!reached_goal){
         reached_goal = reached_target(position, goal);
     }
-    
+    // if reached the target - define the next target to reach goal
     if (reached_target(position, target) && !reached_goal){
         update_target(goal);
     }
-
+    // if in attack mode then attack the closest unit
     if (attack_mode && cool_down < 0.0f){
+        Sprite* closest_sprite = nullptr;
+        float closest_dist = INFINITY;
+        float dist;
+        // determine closest unit
         for (Sprite* i : sprites) {
             if(i->team != team){
-                if(Vector3DistanceSqr(i->position, position) < range){
-                    i->decrease_health(damage);
-                    cool_down = cool_down_time;
+                dist = Vector3DistanceSqr(i->position, position);
+                if(dist < range && dist < closest_dist){
+                    closest_sprite = i;
+                    closest_dist = dist;
                 }
             }
+        }
+        if (closest_sprite != nullptr){
+            closest_sprite->decrease_health(damage);
+            cool_down = cool_down_time;
         }
     }
 
@@ -70,6 +79,7 @@ void Archer::update(std::vector<Sprite*> sprites){
         } else {
             bool blockage = false;
             for (Sprite* i : sprites) {
+                // determine when goal has been reached by proximity to other units that have reached the similar goal
                 if (circle_circle_intersection(vec3_to_vec2(position), vec3_to_vec2(i->position), 0.3f, 0.3f)){
                     blockage = true;
                     avoidance_force = (Vector3){ position.x - i->position.x, 0.0f, position.z - i->position.z };
@@ -79,9 +89,12 @@ void Archer::update(std::vector<Sprite*> sprites){
                         reached_goal = true;
                     }   
                 } else {
+                    // collisiotn avoidance
+                    // check if any units are in the are the sprite is travelling towards
                     if (point_circle_intersection(vec3_to_vec2(ahead), vec3_to_vec2(i->position), 0.5f )){
                          if (Vector3DistanceSqr(goal, i->goal) > 1.0f){
                             blockage = true;
+                            // appply an avoidance force to the player to avoid unit
                             avoidance_force = (Vector3){ ahead.x - i->position.x, 0.0f, ahead.z - i->position.z };
                             avoidance_force = Vector3Scale(Vector3Normalize(avoidance_force), MAX_AVOIDANCE_FORCE);
                             position = move_to_target(position, Vector3Add(ahead, avoidance_force), speed);
@@ -89,6 +102,7 @@ void Archer::update(std::vector<Sprite*> sprites){
                     }
                 }
             }
+            // if no collision avoidance, move towards target
             if (!blockage){
                 position = move_to_target(position, target, speed);
             }
@@ -97,24 +111,29 @@ void Archer::update(std::vector<Sprite*> sprites){
 }
 
 void Archer::update_target(Vector3 new_target){
+    // update the goa
     goal = new_target;
     reached_goal = false;
+    // get the next node in the route to the goal
     Vector2 next_target = env->gen_route(vec3_to_vec2(position), vec3_to_vec2(goal));
     target = vec2_to_vec3_ground(next_target);
 }
 
 void Archer::next_node(){
+    // get the next node in the route to the goal
     Vector2 next_target = env->gen_route(vec3_to_vec2(target), vec3_to_vec2(goal));
     target = vec2_to_vec3_ground(next_target);
 }
 
 void Archer::draw(){
+    // draw the correct teams archer model
     if (team == Teams::red_team){
         DrawModel(archer_model, position, 0.3f, RED);
     } else if (team == Teams::blue_team){
         DrawModel(archer_model, position, 0.3f, BLUE);
     }
 
+    // draw the halo if it is a 'selected' unit
     if (selected){
         DrawModel(halo_model, position, 0.3f, WHITE);
     }

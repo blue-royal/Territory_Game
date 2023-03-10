@@ -5,7 +5,9 @@ Environment::Environment(){
 }
 
 Environment::Environment(char *level_path){
+    // load the level file
     load_level(level_path);
+    // load the required models for the environment
     red_block = LoadModel("assets/models/red_block/red.obj");
     blue_block = LoadModel("assets/models/blue_block/blue.obj");
     neutral_block = LoadModel("assets/models/neutral_block/neutral.obj");
@@ -13,11 +15,13 @@ Environment::Environment(char *level_path){
 
     Shader shader = LoadShader(TextFormat("assets/shaders/lighting.vs"), TextFormat("assets/shaders/lighting.fs", 330));
 
+    // attach the relevant shaders to the models
     red_block.materials[0].shader = shader;   
     blue_block.materials[0].shader = shader;   
     neutral_block.materials[0].shader = shader;
     obstical_block.materials[0].shader = shader;  
 
+    // create the navigation graph for rough pathing
     create_graph();
 }
 
@@ -181,6 +185,7 @@ void Environment::create_graph(){
 
     all_nodes.push_back(Node());
     all_nodes.push_back(Node());
+    // print out the nodes generated
     counter = 0;
     for (std::vector<Node>::iterator j = all_nodes.begin(); j < all_nodes.end(); j++) {
         j->index = counter;
@@ -188,6 +193,7 @@ void Environment::create_graph(){
         std::cout << j->coords.x << ", " << j->coords.y << std::endl;
     }
     graph_size = all_nodes.size();
+    // find the valid routes between generated nodes
     for (unsigned int i = 0; i < graph_size-2; i++){
         for (unsigned int j = 0; j < graph_size-2; j++){
             if (valid_route(centralise_vec2(all_nodes[i].coords), centralise_vec2(all_nodes[j].coords)) && valid_route(centralise_vec2(all_nodes[j].coords), centralise_vec2(all_nodes[i].coords))){
@@ -196,14 +202,18 @@ void Environment::create_graph(){
                 nav_graph.push_back(-1);
             }
         }
+        // add nodes for the start and end node
         nav_graph.push_back(-1);
         nav_graph.push_back(-1);
     }
+
+    // add nodes for start and end connections
     for (unsigned int i = 0; i < graph_size; i++){
         nav_graph.push_back(-1);
         nav_graph.push_back(-1);
     }
 
+    // print out the graph
     for (unsigned int i = 0; i < graph_size; i++){
         for (unsigned int j = 0; j < graph_size; j++){
             std::cout << nav_graph[(i*graph_size) + j] << ", ";
@@ -215,12 +225,14 @@ bool Environment::valid_route(Vector2 start, Vector2 end){
     float dx, dy, x, y;
     float len;
 
+    // set up (dx, dy) vector for the direction
     dx = end.x - start.x;
     dy = end.y - start.y;
     
     x = start.x;
     y = start.y;
     
+    // calculate the intervals to check for obstical tiles in the path
     if (abs(dy) < abs(dx)){
         len = abs(dx) * 3;
         dy = dy / len;
@@ -230,6 +242,8 @@ bool Environment::valid_route(Vector2 start, Vector2 end){
         dx = dx / len;
         dy = dy / len;
     }
+
+    // check at regular intervals along the route
     for (int i = 0; i <= len; i ++){
         if (!valid_target((Vector2){ x, y })){
             return false;
@@ -251,6 +265,7 @@ Vector2 Environment::gen_route(Vector2 start, Vector2 end){
     Node finish = Node(end);
     // otherwise add the start and end node to the graph
     for (unsigned int i = 0; i < graph_size-2; i++){
+        // check if there is avalid route between each node and the graph
         if (valid_route(start, centralise_vec2(all_nodes[i].coords)) &&  valid_route(centralise_vec2(all_nodes[i].coords), start)){
             nav_graph[(graph_size-2)*graph_size + i] = Vector2Distance(start, all_nodes[i].coords);
             nav_graph[i*graph_size + (graph_size-2)] = Vector2Distance(start, all_nodes[i].coords);
@@ -367,6 +382,7 @@ bool Environment::valid_target(Vector2 target){
 }
 
 void Environment::update_tile(Vector2 pos, Teams team){
+    // find the idex of the relevant tile and convert to the correct teams tiles
     if (team == Teams::red_team){
         grid[static_cast<int>(pos.x) + (static_cast<int>(pos.y) * width)] = Tiles::red_tile;
         changed_tile.new_type = Tiles::red_tile;
@@ -382,6 +398,7 @@ void Environment::update_tile(int pos, Tiles new_tile){
 }
 
 void Environment::draw(){
+    // draw all tiles in the positive quadrant starting at (0, 0)
     unsigned int counter = 0;
     for (std::vector<Tiles>::iterator i = grid.begin(); i != grid.end(); i++) {
         float x = counter%width;
@@ -408,6 +425,11 @@ void Environment::draw(){
         }
         counter++;
     }
+
+    // Debug to show nodes
+    // for (Node i: all_nodes){
+    //     DrawModel(blue_block, vec2_to_vec3_ground(i.coords), 0.3f, BLACK);
+    // }
     
 }
 
@@ -415,6 +437,7 @@ Tile_Change Environment::get_changed_tile(){
     return changed_tile;
 }
 
+// calculate the numner of tiles of a given type on the map
 unsigned int Environment::get_number_of(Tiles tile_type){
     unsigned int count = 0;
     for (Tiles i: grid){

@@ -15,6 +15,7 @@ Worker::Worker(Vector3 start, Teams colour, Environment* environ) : Sprite(Sprit
     halo_model = LoadModel("assets/models/selected_halo/halo.obj");
     halo_model.materials[0].shader = shader;   
 
+    // initialise relevant values for the worker type
     position = start;
     target = start;
     goal = start;
@@ -33,10 +34,11 @@ void Worker::update(std::vector<Sprite*> sprites){
         working_time = 0.0f;
         new_node_in_region();
     }
-
+    // if if reached a new node to work on, start timer
     if (reached_goal && current_state == State::working_state){
         working_time += GetFrameTime();
     }
+    // 
     if ( current_state == State::working_state && !env->is_neutral(vec3_to_vec2(goal))){
         new_node_in_region();
     }
@@ -69,12 +71,16 @@ void Worker::update(std::vector<Sprite*> sprites){
         
             bool blockage = false;
             for (Sprite* i : sprites) {
+                // determine if unit is in close proximity
                 if (circle_circle_intersection(vec3_to_vec2(position), vec3_to_vec2(i->position), 0.3f, 0.3f)){
                     blockage = true;
+                    // add a force to avoid colliding with the unit
                     avoidance_force = (Vector3){ position.x - i->position.x, 0.0f, position.z - i->position.z };
                     avoidance_force = Vector3Scale(Vector3Normalize(avoidance_force), MAX_AVOIDANCE_FORCE);
                     position = move_to_target(position, Vector3Add(ahead, avoidance_force), speed);
+                    // if they have reache the target and it is similar to current units target
                     if (i->reached_goal && Vector3DistanceSqr(goal, i->goal) < 1.0f && current_state == State::idle_state){
+                        // set the goal has been reached
                         reached_goal = true;
                     }   
                 } else {
@@ -88,6 +94,7 @@ void Worker::update(std::vector<Sprite*> sprites){
                     }
                 }
             }
+            // if no blockage, move towards the target
             if (!blockage){
                 position = move_to_target(position, target, speed);
             }
@@ -96,6 +103,7 @@ void Worker::update(std::vector<Sprite*> sprites){
 }
 
 void Worker::update_target(Vector3 new_target){
+    // set up a new goal
     goal = new_target;
     current_state = State::idle_state;
     reached_goal = false;
@@ -104,17 +112,20 @@ void Worker::update_target(Vector3 new_target){
 }
 
 void Worker::next_node(){
+    // get the next node in the route to the goal
     Vector2 next_target = env->gen_route(vec3_to_vec2(target), vec3_to_vec2(goal));
     target = vec2_to_vec3_ground(next_target);
 }
 
 void Worker::draw(){
+    // draw the correct teams colour
     if (team == Teams::red_team){
         DrawModel(worker_model, position, 0.3f, RED);
     } else if (team == Teams::blue_team){
         DrawModel(worker_model, position, 0.3f, BLUE);
     }
 
+    // if 'selected' then draw halo model to show that unit is selected
     if (selected){
         DrawModel(halo_model, position, 0.3f, YELLOW);
     }
@@ -122,12 +133,14 @@ void Worker::draw(){
 }
 
 void Worker::new_node_in_region(){
+    // get a new tile that can be converted to the teams colour
     update_target(vec2_to_vec3_ground(env->closest_neutral(vec3_to_vec2(position), mine_area)));
     current_state = State::working_state;
 
 }
 
 void Worker::new_mine_area(){
+    // setup new area to convert tiles around
     mine_area = vec3_to_vec2(position);
     new_node_in_region();
 }

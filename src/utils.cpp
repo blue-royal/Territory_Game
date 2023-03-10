@@ -30,41 +30,47 @@ bool ray_sphere_intersection(Ray ray, Vector3 center, float radius){
     return false;
 }
 
+// find the position where a ray intersects with the ground level
 Vector3 ray_ground_intersection(Ray ray){
     float dist = GROUND_HEIGHT-ray.position.y / ray.direction.y;
     return Vector3Add(ray.position, Vector3Scale(ray.direction, dist));
 }
 
 bool point_circle_intersection(Vector2 point, Vector2 center, float radius){
-    if (Vector2Distance(point, center) <= radius){
+    if (Vector2DistanceSqr(point, center) <= radius*radius){
         return true;
     }
     return false;
 }
 
 bool circle_circle_intersection(Vector2 center1, Vector2 center2, float radius1, float radius2){
-    if (Vector2Distance(center1, center2) < radius1 + radius2){
+    if (Vector2DistanceSqr(center1, center2) < std::pow(radius1 + radius2, 2)){
         return true;
     }
     return false;
 }
 
+// given a position and target position move along that vector by distance speed
 Vector3 move_to_target(Vector3 position, Vector3 target, float speed){
     return Vector3Add(position, Vector3Scale( Vector3Normalize( Vector3Subtract(target, position) ), speed * GetFrameTime()));
 }
 
+// extract x and z component into a vector 2
 Vector2 vec3_to_vec2(Vector3 vec){
     return (Vector2){ vec.x, vec.z };
 }
 
+// expand 2d vector so that it is positioned at ground level
 Vector3 vec2_to_vec3_ground(Vector2 vec){
     return (Vector3){ vec.x, GROUND_HEIGHT, vec.y };
 }
 
+// determine if a unit is within a 0.05 of the target region
 bool reached_target(Vector3 pos, Vector3 target){
     return abs(pos.x - target.x) < 0.05f && abs(pos.z - target.z) < 0.05f ;
 }
 
+// take a vector and set it to the center of that grid space
 Vector2 centralise_vec2(Vector2 vec){
     return (Vector2){ (float)((int)vec.x)+0.5f, (float)((int)vec.y)+0.5f };
 }

@@ -7,22 +7,21 @@ Game::Game(){
 
 void Game::initialise_game(){
 
+    // set up the environment
     env = new Environment((char*)"assets/scene/main_level.txt");
 
+    // setup the initial conditions of the game
     sprites.push_back(new Tower(env->blue_base, Teams::blue_team));
-    sprites.push_back(new Archer((Vector3){ 12.0f, 0.0f, 10.0f }, Teams::blue_team, env));
-    sprites.push_back(new Archer((Vector3){ 14.0f, 0.0f, 10.0f }, Teams::blue_team, env));
-    sprites.push_back(new Worker((Vector3){ 13.0f, 0.0f, 10.0f }, Teams::blue_team, env));
-    sprites.push_back(new Worker((Vector3){ 15.0f, 0.0f, 10.0f }, Teams::blue_team, env));
-    sprites.push_back(new Worker((Vector3){ 16.0f, 0.0f, 10.0f }, Teams::blue_team, env));
+    sprites.push_back(new Archer((Vector3){ 5.0f, 0.0f, 10.0f }, Teams::blue_team, env));
+    sprites.push_back(new Archer((Vector3){ 5.0f, 0.0f, 11.0f }, Teams::blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 12.0f }, Teams::blue_team, env));
+    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 13.0f }, Teams::blue_team, env));    
 
     sprites.push_back(new Tower(env->red_base, Teams::red_team));
-    sprites.push_back(new Archer((Vector3){ 5.0f, 0.0f, 10.0f }, Teams::red_team, env));
-    sprites.push_back(new Archer((Vector3){ 5.0f, 0.0f, 11.0f }, Teams::red_team, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 12.0f }, Teams::red_team, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 13.0f }, Teams::red_team, env));
-    sprites.push_back(new Worker((Vector3){ 5.0f, 0.0f, 14.0f }, Teams::red_team, env));
-
+    sprites.push_back(new Archer((Vector3){ 12.0f, 0.0f, 10.0f }, Teams::red_team, env));
+    sprites.push_back(new Archer((Vector3){ 13.0f, 0.0f, 10.0f }, Teams::red_team, env));
+    sprites.push_back(new Worker((Vector3){ 14.0f, 0.0f, 10.0f }, Teams::red_team, env));
+    sprites.push_back(new Worker((Vector3){ 15.0f, 0.0f, 10.0f }, Teams::red_team, env));
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     // Define the camera to look into 3D world
@@ -47,11 +46,13 @@ void Game::update_draw(){
         BeginMode3D(camera);
             env->draw();
 
+            // draw all sprites
             for (Sprite* i : sprites) {
                 i->draw();
             }
-
         EndMode3D();
+
+        // draw the health bars for all sprites
         for (Sprite* i : sprites) {
             i->draw_health_bar(camera);
         }
@@ -61,6 +62,7 @@ void Game::update_draw(){
             Vector2 corner2 = GetMousePosition();
             DrawRectangle(std::min(corner1.x, corner2.x), std::min(corner1.y, corner2.y), abs(corner1.x - corner2.x), abs(corner1.y - corner2.y), CLITERAL(Color){0, 255, 0, 80});
         }
+
     EndDrawing();
 }
 
@@ -71,13 +73,14 @@ void Game::events(Teams team){
 
     Ray ray = { 0 };
 
-    
+    // set anew target position for selected players
     ray = GetMouseRay(GetMousePosition(), camera);
     if (IsMouseButtonPressed(1)){
         ground_intersect = ray_ground_intersection(ray);
         if(env->valid_target((Vector2){ ground_intersect.x, ground_intersect.z })){
             ground_intersect.y += 0.5f;
             for (Sprite* i : sprites) {
+                // update the target for 'selected' sprites
                 if (i->team == team){
                     if (i->Type == Sprite_Type::worker_unit){
                         auto TypedI = (Worker*) i;
@@ -96,6 +99,7 @@ void Game::events(Teams team){
         }
     }
 
+    // store corner data for the box selection
     if (IsMouseButtonPressed(0)){
         corner1 = GetMousePosition();
     }
@@ -111,11 +115,13 @@ void Game::events(Teams team){
         }
     }
 
+    // 'w' key toggles between work mode and idle mode
     if (IsKeyPressed(KEY_W)){
         for (Sprite* i : sprites) {
             if(i->team == team){
                 if (i->Type == Sprite_Type::worker_unit){
                     auto typedI = (Worker*) i;
+                    // only toggle if 'selected'
                     if (typedI->selected){
                         typedI->new_mine_area();
                     }
@@ -124,6 +130,7 @@ void Game::events(Teams team){
         }
     }
 
+    // 'a' is to toggle between attack mode and idle mode
     if (IsKeyPressed(KEY_A)){
         for (Sprite* i : sprites) {
             if(i->team == team){
@@ -152,6 +159,7 @@ void Game::events(Teams team){
 
 }
 
+// remove a specific element from the sprites vector
 void Game::delete_sprite(unsigned int index){
     switch (sprites[index]->Type)
         {
@@ -192,8 +200,8 @@ Game::~Game(){
     }
 }
 
+// game loop
 void C_Game::run_game(){
-    std::cout << "running" << std::endl;
     initialise_game();
     init_network();
     while (!WindowShouldClose()){ // Detect window close button or ESC key
@@ -205,6 +213,7 @@ void C_Game::run_game(){
     CloseWindow();
 }
 
+// initialise client data
 void C_Game::init_network(){
     client = Client(12531);
 }
@@ -213,6 +222,7 @@ void C_Game::network(){
     //send
     Serialise pack;
 
+    // delete sprites that have lost all their health and send message
     unsigned int counter = 0;
     for(Sprite* i: sprites){
         if(i->team == Teams::blue_team){
@@ -223,7 +233,7 @@ void C_Game::network(){
         }
         counter++;
     }
-
+    // if q button is pressed and player has enough money create new worker
      if (IsKeyPressed(KEY_Q)){
         if(points > WORKER_COST){
             std::cout << "new worker made" << std::endl;
@@ -234,6 +244,8 @@ void C_Game::network(){
 
     }
 
+
+    // if s button is pressed and player has enough money create new archer
     if (IsKeyPressed(KEY_S)){
         if(points > ARCHER_COST){
             std::cout << "new archer made" << std::endl;
@@ -243,30 +255,36 @@ void C_Game::network(){
         }
     }
 
+    // send positional data
     pack = pack << (int)Network_Headers::update_sprites;
     for(Sprite* i: sprites){
         if(i->team == Teams::red_team){
             pack = pack << i->position.x << i->position.z;
         }
     }
+    // send ordered health data
     for(Sprite* i: sprites){
         if(i->team == Teams::blue_team){
             pack = pack << i->health;
         }
     }
 
+    // send changes to the worked tiles
     pack = pack << (int)Network_Headers::update_terrain;
     Tile_Change changed_tile =  env->get_changed_tile();
     pack = pack << (int)changed_tile.pos << (int)changed_tile.new_type;
 
+    // send the data
     client.write(pack.get_bytes());
 
     // recieve
     std::vector<Byte> bytes = client.recieve();
 
+    // set up deserialiser
     Deserialise unpack(bytes);
     Network_Headers section_type = (Network_Headers) unpack.get_int();
 
+    // find and delete all deleted sprites
     while (section_type == Network_Headers::delete_sprite){
         int index = unpack.get_int() - 1;
         if (index != -1){
@@ -275,6 +293,7 @@ void C_Game::network(){
         section_type = (Network_Headers) unpack.get_int();
     }
 
+    // add new sprites to sprite vector
     while (section_type == Network_Headers::add_worker){
         std::cout << "new worker" << std::endl;
         sprites.push_back(new Worker(other_spawn, Teams::blue_team, env));
@@ -287,6 +306,7 @@ void C_Game::network(){
         section_type = (Network_Headers) unpack.get_int();
     }
 
+    // update positional and health data of opponents units
     if (section_type == Network_Headers::update_sprites){
         for(Sprite* i: sprites){
             if (i->team == Teams::blue_team){
@@ -315,6 +335,8 @@ void C_Game::network(){
             }
         }
     }
+
+    // update changed terrain
     if(unpack.get_int() == (int)Network_Headers::update_terrain){
         while (unpack.get_next_type() != Data_Types::finished){
             int pos = unpack.get_int();
@@ -327,7 +349,7 @@ void C_Game::network(){
 }
 
 
-
+// run the gae loop
 void S_Game::run_game(){
     std::cout << "running" << std::endl;
     initialise_game();
@@ -341,14 +363,17 @@ void S_Game::run_game(){
     CloseWindow();
 }
 
+// set up server of specified port
 void S_Game::init_network(){
     server = Server(12531);
 }
 
 void S_Game::network(){
     //send
+    // setup seriqliser
     Serialise pack;
 
+    // delete sprites that have lost all their health
     unsigned int counter = 0;
     for(Sprite* i: sprites){
         if(i->team == Teams::red_team){
@@ -360,6 +385,8 @@ void S_Game::network(){
         counter++;
     }
 
+    // add new units if there is enough funds
+    // add worker
     if (IsKeyPressed(KEY_Q)){
         if(points > WORKER_COST){
             std::cout << "new worker made" << std::endl;
@@ -370,6 +397,7 @@ void S_Game::network(){
 
     }
 
+    // add archer
     if (IsKeyPressed(KEY_S)){
         if(points > ARCHER_COST){
             std::cout << "new archer made" << std::endl;
@@ -379,6 +407,7 @@ void S_Game::network(){
         }
     }
 
+    // send update for teams positional data and opponents health data 
     pack = pack << (int)Network_Headers::update_sprites;
     for(Sprite* i: sprites){
         if(i->team == Teams::blue_team){
@@ -396,14 +425,17 @@ void S_Game::network(){
     Tile_Change changed_tile =  env->get_changed_tile();
     pack = pack << (int)changed_tile.pos << (int)changed_tile.new_type;
 
+    // send the data sent to the serialiser
     server.write(pack.get_bytes());
 
     //recieve
     std::vector<Byte> bytes = server.recieve();
 
+    //setup deserialiser
     Deserialise unpack(bytes);
     Network_Headers section_type = (Network_Headers) unpack.get_int();
 
+    // read sprites that need to be deleted
     while (section_type == Network_Headers::delete_sprite){
         int index = unpack.get_int() - 1;
         if (index != -1){
@@ -413,6 +445,7 @@ void S_Game::network(){
         section_type = (Network_Headers) unpack.get_int();
     }
 
+    // add new units
     while (section_type == Network_Headers::add_worker){
         std::cout << "new worker" << std::endl;
         sprites.push_back(new Worker(other_spawn, Teams::red_team, env));
@@ -425,7 +458,7 @@ void S_Game::network(){
         section_type = (Network_Headers) unpack.get_int();
     }
 
-
+    // update positional data for opposing team
     if (section_type == Network_Headers::update_sprites){
         for(Sprite* i: sprites){
             if (i->team == Teams::red_team){
@@ -442,6 +475,8 @@ void S_Game::network(){
                 }
             }
         }
+
+        // udpate health data for servers team
         for(Sprite* i: sprites){
             if (i->team == Teams::blue_team){
                 if(unpack.get_next_type() != Data_Types::finished){
@@ -455,6 +490,7 @@ void S_Game::network(){
         }
     }
 
+    // update changes to the terrain
     if(unpack.get_int() == (int)Network_Headers::update_terrain){
         while (unpack.get_next_type() != Data_Types::finished){
             int pos = unpack.get_int();
@@ -465,6 +501,8 @@ void S_Game::network(){
         }
     }
 }
+
+// local game - game loop
 void L_Game::run_game(){
     std::cout << "running" << std::endl;
     initialise_game();
